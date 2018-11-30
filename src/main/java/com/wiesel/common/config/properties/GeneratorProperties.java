@@ -81,6 +81,8 @@ public class GeneratorProperties {
 	
 	private String jspPath;
 	
+	private String detailTableName;
+	
 	public static final String AUTHOR="author";
 	public static final String PARENT="parent";
 	public static final String MODULE_NAME="moduleName";

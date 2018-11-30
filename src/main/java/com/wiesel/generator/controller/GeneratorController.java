@@ -1,6 +1,8 @@
 package com.wiesel.generator.controller;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +28,8 @@ import com.wiesel.common.config.properties.GeneratorProperties;
 import com.wiesel.generator.entity.TableInfo;
 import com.wiesel.generator.req.TableInfoReq;
 import com.wiesel.generator.service.IGeneratorService;
+
+import cn.hutool.core.bean.BeanUtil;
 
 /**
  *
@@ -100,10 +104,9 @@ public class GeneratorController {
 	@GetMapping("/edit")
 	String edit(Model model) {
 
-		model.addAttribute("property",GeneratorProperties.getGeneratorProperties());
+		model.addAttribute("property", GeneratorProperties.getGeneratorProperties());
 		return prefix + "/edit";
 	}
-
 
 	/**
 	 * 
@@ -124,38 +127,22 @@ public class GeneratorController {
 	 * @date 创建时间：2018年11月27日
 	 * @author 作者：wuj
 	 */
-	@SuppressWarnings("static-access")
 	@ResponseBody
 	@PostMapping("/update")
 	public ApiResult<String> update(GeneratorProperties generatorProperties) {
 		try {
+			Map<String, Object> params = BeanUtil.beanToMap(generatorProperties);
 			PropertiesConfiguration conf = new PropertiesConfiguration("generator.properties");
-			conf.setProperty(generatorProperties.AUTHOR, generatorProperties.getAuthor());
-			conf.setProperty(generatorProperties.AUTO_REMOVE_PRE, generatorProperties.getAutoRemovePre());
-			conf.setProperty(generatorProperties.TABLE_PRE_FIX, generatorProperties.getTablePrefix());
-			conf.setProperty(generatorProperties.ENTITY_NAME, generatorProperties.getEntityName());
-			conf.setProperty(generatorProperties.MAPPER_NAME, generatorProperties.getMapperName());
-			conf.setProperty(generatorProperties.XML_NAME, generatorProperties.getXmlName());
-			conf.setProperty(generatorProperties.SERVICE_IMPL_NAME, generatorProperties.getServiceImplName());
-			conf.setProperty(generatorProperties.SERVICE_NAME, generatorProperties.getServiceName());
-			conf.setProperty(generatorProperties.CONTROLLER_NAME, generatorProperties.getControllerName());
-			conf.setProperty(generatorProperties.PARENT, generatorProperties.getParent());
-			conf.setProperty(generatorProperties.MODULE_NAME, generatorProperties.getModuleName());
-			conf.setProperty(generatorProperties.API_PATH,generatorProperties.getApiPath());
-			conf.setProperty(generatorProperties.SPI_PATH,generatorProperties.getSpiPath());
-			conf.setProperty(generatorProperties.MYBATIS_PATH,generatorProperties.getMybatisPath());
-			conf.setProperty(generatorProperties.WEB_PATH,generatorProperties.getWebPath());
-			conf.setProperty(generatorProperties.XML_NAME,generatorProperties.getXmlPath());
-			conf.setProperty(generatorProperties.JS_PATH,generatorProperties.getJsPath());
-			conf.setProperty(generatorProperties.JSP_PATH,generatorProperties.getJsPath());
+			for (Entry<String, Object> entry : params.entrySet()) {
+				conf.setProperty(entry.getKey(), entry.getValue());
+			}
 			conf.save();
 		} catch (ConfigurationException e) {
 			return ApiResult.error("保存配置文件出错");
 		}
 		return ApiResult.ok();
 	}
-	
-	
+
 	/**
 	 * 
 	 * <p>
@@ -181,7 +168,7 @@ public class GeneratorController {
 	public void code(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("tableName") String tableName) throws IOException {
 		String[] tableNames = new String[] { tableName };
-		byte[] data = generatorService.generatorCode(tableNames,OWNER);
+		byte[] data = generatorService.generatorCode(tableNames, OWNER);
 		response.reset();
 		response.setHeader("Content-Disposition", "attachment; filename=\"wiesel.zip\"");
 		response.addHeader("Content-Length", "" + data.length);
