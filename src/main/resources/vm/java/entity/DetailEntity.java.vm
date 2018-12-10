@@ -1,0 +1,65 @@
+package ${detail.packageName}.entity;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+/**
+ *
+ * @ClassName 类名：${detail.capitalEntityName}
+ * @Description 功能说明： ${detail.comments}
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+@Table(name = "${detail.tableName}")
+public class ${detail.capitalEntityName} implements java.io.Serializable {
+ 
+ private static final long serialVersionUID = 1L;
+ 
+	
+	#foreach ($tableField in $detail.tableFields)
+	#if($tableField.comments!='' && $tableField.comments!="null" )
+    
+    /**
+	 * $tableField.comments
+	 */
+    #end
+	@Column(name = "$tableField.columnName")
+	private $tableField.propertyType $tableField.propertyName;
+    #end
+    
+    
+    /** default constructor */
+	public ${detail.capitalEntityName}() {
+	}
+
+	
+    #foreach ($tableField in $detail.tableFields)
+  
+    public $tableField.propertyType  get${tableField.capitalName}() {
+		return $tableField.propertyName;
+	}
+
+	public void set${tableField.capitalName}($tableField.propertyType ${tableField.propertyName}) {
+		this.${tableField.propertyName} = ${tableField.propertyName};
+	}
+    #end
+    
+    
+    #foreach ($tableField in $detail.tableFields)
+    public static final String $tableField.columnName = "$tableField.columnName";
+    #end
+ 
+}

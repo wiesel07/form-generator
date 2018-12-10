@@ -33,7 +33,7 @@ public class TableField {
 	// 是否主键PRI
 	private String keys;
 
-	private String comment;
+	private String comments;
 	
 	
 	private Integer dataLength;

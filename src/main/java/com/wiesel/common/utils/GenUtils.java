@@ -1,5 +1,6 @@
 package com.wiesel.common.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
+import com.alibaba.druid.support.json.JSONUtils;
 import com.wiesel.common.config.properties.GeneratorProperties;
 import com.wiesel.common.enums.DbColumnType;
 import com.wiesel.common.enums.IColumnType;
@@ -87,8 +89,8 @@ public class GenUtils {
 		GeneratorProperties generatorProperties = GeneratorProperties.getGeneratorProperties();
 		tableInfo = getTableInfo(generatorProperties, tableInfo, tableFields);
 		detailTableInfo = getTableInfo(generatorProperties, detailTableInfo, detailTableFields);
-		VelocityContext context = getVelocityContext(generatorProperties, tableInfo, tableFields,
-				detailTableInfo, detailTableFields);
+		VelocityContext context = getVelocityContext(generatorProperties, tableInfo, tableFields, detailTableInfo,
+				detailTableFields);
 
 		// 获取模板列表
 		List<String> templates = getTemplates(true);
@@ -100,8 +102,13 @@ public class GenUtils {
 			try {
 				// 添加到zip
 				log.info(template);
-				zip.putNextEntry(new ZipEntry(getFileName(template, tableInfo, generatorProperties)));
-				zip.putNextEntry(new ZipEntry(getFileName(template, detailTableInfo, generatorProperties)));
+
+				if (template.contains("DetailEntity.java.vm")) {
+					zip.putNextEntry(new ZipEntry(getFileName(template, detailTableInfo, generatorProperties)));
+				} else {
+					zip.putNextEntry(new ZipEntry(getFileName(template, tableInfo, generatorProperties)));
+				}
+
 				IOUtils.write(sw.toString(), zip, "UTF-8");
 
 				IOUtils.closeQuietly(sw);
@@ -117,8 +124,7 @@ public class GenUtils {
 	/**
 	 * 获取文件名
 	 */
-	private String getFileName(String template, TableInfo tableInfo,
-			GeneratorProperties generatorProperties) {
+	private String getFileName(String template, TableInfo tableInfo, GeneratorProperties generatorProperties) {
 
 		String capitalClassName = tableInfo.getCapitalClassName();
 		String classname = tableInfo.getClassName();
@@ -127,15 +133,20 @@ public class GenUtils {
 		String capitalMapperName = String.format(generatorProperties.getMapperName(), capitalClassName);
 		String capitalXmlName = String.format(generatorProperties.getXmlName(), capitalClassName);
 		String capitalServiceName = String.format(generatorProperties.getServiceName(), capitalClassName);
-		String capitalServiceImplName = String.format(generatorProperties.getServiceImplName(),
-				capitalClassName);
-		String capitalControllerName = String.format(generatorProperties.getControllerName(),
-				capitalClassName);
-		String packagePath="";
-		if (template.contains("Entity.java.vm")) {
-			
+		String capitalServiceImplName = String.format(generatorProperties.getServiceImplName(), capitalClassName);
+		String capitalControllerName = String.format(generatorProperties.getControllerName(), capitalClassName);
+		String packagePath = "";
+		if (template.contains("Entity.java.vm") || template.contains("DetailEntity.java.vm")) {
+			packagePath = generatorProperties.getApiPath() + File.separator + generatorProperties.getModuleName()
+					+ File.separator + "entity" + File.separator + capitalEntityName + ".java";
+			return packagePath;
 		}
-		
+		if (template.contains("Service.java.vm")) {
+			packagePath = generatorProperties.getApiPath() + File.separator + generatorProperties.getModuleName()
+					+ File.separator + "service" + File.separator + capitalServiceName + ".java";
+			return packagePath;
+		}
+
 		// String packagePath = "src" + File.separator + "main" + File.separator
 		// + "java";
 		// if (StringUtils.isNotBlank(packageName)) {
@@ -243,22 +254,24 @@ public class GenUtils {
 
 	public List<String> getTemplates(Boolean isHasDetailTable) {
 		List<String> templates = new ArrayList<String>();
-		if (isHasDetailTable) {
 
+		templates.add("vm/java/entity/Entity.java.vm");
+		templates.add("vm/java/service/Service.java.vm");
+		if (isHasDetailTable) {
+			templates.add("vm/java/entity/DetailEntity.java.vm");
 		} else {
 
-			templates.add("vm/java/Entity.java.vm");
-			templates.add("vm/java/Mapper.java.vm");
-			templates.add("vm/java/Service.java.vm");
-			templates.add("vm/java/ServiceImpl.java.vm");
-			templates.add("vm/java/Controller.java.vm");
-
-			templates.add("vm/xml/Mapper.xml.vm");
-			templates.add("vm/xml/index.xml.vm");
-			templates.add("vm/xml/add.xml.vm");
-
-			templates.add("vm/js/index.js.vm");
-			templates.add("vm/js/add.js.vm");
+			// templates.add("vm/java/Mapper.java.vm");
+			// templates.add("vm/java/Service.java.vm");
+			// templates.add("vm/java/ServiceImpl.java.vm");
+			// templates.add("vm/java/Controller.java.vm");
+			//
+			// templates.add("vm/xml/Mapper.xml.vm");
+			// templates.add("vm/xml/index.xml.vm");
+			// templates.add("vm/xml/add.xml.vm");
+			//
+			// templates.add("vm/js/index.js.vm");
+			// templates.add("vm/js/add.js.vm");
 		}
 
 		return templates;
@@ -269,11 +282,15 @@ public class GenUtils {
 
 		// 设置velocity资源加载器
 		Properties prop = new Properties();
-		prop.put("file.resource.loader.class",
-				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 		Velocity.init(prop);
+		Map<String, Object> result = new HashMap<>();
+		Map<String, Object> main = assembleData(generatorProperties, tableInfo);
 
-		return new VelocityContext(assembleData(generatorProperties, tableInfo));
+		result.put("main", main);
+		result.put("author", generatorProperties.getAuthor());
+		result.put("createDate", DateUtil.format(DateUtil.date(), DatePattern.NORM_DATE_PATTERN));
+		return new VelocityContext(result);
 	}
 
 	private VelocityContext getVelocityContext(GeneratorProperties generatorProperties, TableInfo tableInfo,
@@ -281,8 +298,7 @@ public class GenUtils {
 
 		// 设置velocity资源加载器
 		Properties prop = new Properties();
-		prop.put("file.resource.loader.class",
-				"org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 		Velocity.init(prop);
 
 		Map<String, Object> result = new HashMap<>();
@@ -290,6 +306,8 @@ public class GenUtils {
 		Map<String, Object> detail = assembleData(generatorProperties, detailTableInfo);
 		result.put("main", main);
 		result.put("detail", detail);
+		result.put("author", generatorProperties.getAuthor());
+		result.put("createDate", DateUtil.format(DateUtil.date(), DatePattern.NORM_DATE_PATTERN));
 		return new VelocityContext(result);
 	}
 
@@ -313,8 +331,9 @@ public class GenUtils {
 		} else {
 			map.put("packageName", generatorProperties.getParent());
 		}
-		map.put("author", generatorProperties.getAuthor());
-		map.put("createDate", DateUtil.format(DateUtil.date(), DatePattern.NORM_DATE_PATTERN));
+		// map.put("author", generatorProperties.getAuthor());
+		// map.put("createDate", DateUtil.format(DateUtil.date(),
+		// DatePattern.NORM_DATE_PATTERN));
 
 		// 实体
 		String capitalEntityName = String.format(generatorProperties.getEntityName(), capitalClassName);
