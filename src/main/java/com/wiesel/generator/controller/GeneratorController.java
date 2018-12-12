@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.wiesel.common.api.ApiResult;
 import com.wiesel.common.base.entity.PageReq;
 import com.wiesel.common.base.entity.PageResp;

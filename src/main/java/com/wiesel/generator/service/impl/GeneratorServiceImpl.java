@@ -9,8 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.plugins.Page;
 import com.wiesel.common.config.properties.GeneratorProperties;
 import com.wiesel.common.utils.GenUtils;
 import com.wiesel.generator.entity.TableField;
@@ -47,7 +46,7 @@ public class GeneratorServiceImpl implements IGeneratorService {
 	private GeneratorMapper generatorMapper;
 
 	@SuppressWarnings("rawtypes")
-	public IPage<TableInfo> queryTablePage(Page page, String tableName, String owner) {
+	public Page<TableInfo> queryTablePage(Page page, String tableName, String owner) {
 		return generatorMapper.queryTablePage(page, tableName, owner);
 	}
 
