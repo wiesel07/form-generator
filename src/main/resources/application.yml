@@ -9,7 +9,7 @@ logging:
   level:
     root: info
     com.wiesel: debug
-spring:
+spring: 
   output: #日志多彩输出，DETECT：会检查终端是否支持ANSI，是的话就采用彩色输出（推荐项）
     ansi:
        enabled: DETECT
@@ -27,8 +27,8 @@ spring:
     driverClassName: oracle.jdbc.driver.OracleDriver
     #url: jdbc:oracle:thin:@//192.168.10.180:1521/orcl
     #username: egams_qzss
-    url: jdbc:oracle:thin:@//127.0.0.1:1521/orcl
-    username: asset_aims_169
+    url: jdbc:oracle:thin:@192.168.10.180:1521/orcl
+    username: egams_qzss_test
     password: bs
     #driverClassName: com.mysql.jdbc.Driver
     #url: jdbc:mysql://47.98.201.218:3306/wiesel?useUnicode=true&characterEncoding=utf8&&allowMultiQueries=true
@@ -70,6 +70,20 @@ spring:
     remove-abandoned: true
     #超过时间限制多长
     remove-abandoned-timeout: 1800 
+  
+  dubbo: 
+    application:
+      name: provider
+    server: true
+    registry: 
+      address: zookeeper://127.0.0.1:2181
+    protocol: 
+      name: dubbo
+      port: 20880
+
+    
+  
+    
 # ====================MybatisPlus====================
 mybatisPlus:
   #typeEnumsPackage: com.wiesel.common.enums

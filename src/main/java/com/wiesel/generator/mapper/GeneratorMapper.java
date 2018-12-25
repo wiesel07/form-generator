@@ -2,7 +2,6 @@ package com.wiesel.generator.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.baomidou.mybatisplus.plugins.Page;
@@ -28,7 +27,7 @@ import com.wiesel.generator.entity.TableInfo;
  ***********************************************************************
  *          </p>
  */
-@Mapper
+//@Mapper
 public interface GeneratorMapper {
 
 	/**

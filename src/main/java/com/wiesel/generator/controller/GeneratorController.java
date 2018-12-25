@@ -1,17 +1,25 @@
 package com.wiesel.generator.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +27,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.plugins.Page;
+import com.bosssoft.platform.bpmnx.rest.service.api.RestUrlBuilder;
 import com.wiesel.common.api.ApiResult;
 import com.wiesel.common.base.entity.PageReq;
 import com.wiesel.common.base.entity.PageResp;
@@ -30,6 +43,8 @@ import com.wiesel.generator.req.TableInfoReq;
 import com.wiesel.generator.service.IGeneratorService;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.http.HttpUtil;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *
@@ -50,6 +65,7 @@ import cn.hutool.core.bean.BeanUtil;
  ***********************************************************************
  *          </p>
  */
+@Slf4j
 @Controller
 @RequestMapping("/generator")
 public class GeneratorController {
@@ -73,12 +89,17 @@ public class GeneratorController {
 	@GetMapping("/list")
 	ApiResult<PageResp<TableInfo>> list(PageReq<TableInfo> pageReq, TableInfoReq tableInfoReq) {
 
-		Page page = new Page(pageReq.getPageNo(), pageReq.getPageSize());
-		page = (Page) generatorService.queryTablePage(page, tableInfoReq.getTableName(), OWNER);
-
+//		Page page = new Page(pageReq.getPageNo(), pageReq.getPageSize());
+//		page = (Page) generatorService.queryTablePage(page, tableInfoReq.getTableName(), OWNER);
+//		
 		PageResp<TableInfo> pageResp = new PageResp<TableInfo>();
-		pageResp.setRows(page.getRecords());
-		pageResp.setTotal(page.getTotal());
+//		pageResp.setRows(page.getRecords());
+//		pageResp.setTotal(page.getTotal());
+
+	
+	
+
+		
 		return ApiResult.ok(pageResp);
 	}
 
