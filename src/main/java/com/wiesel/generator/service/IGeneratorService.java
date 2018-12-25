@@ -2,7 +2,7 @@ package com.wiesel.generator.service;
 
 import java.io.IOException;
 
-import com.baomidou.mybatisplus.plugins.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wiesel.generator.entity.TableInfo;
 
 /**
@@ -42,7 +42,7 @@ public interface IGeneratorService {
 	 * @author 作者：wuj
 	 */
 	@SuppressWarnings("rawtypes")
-	Page<TableInfo> queryTablePage(Page page,String tableName,String owner);
+	IPage<TableInfo> queryTablePage(IPage page,String tableName,String owner);
 
 	/**
 	 * 

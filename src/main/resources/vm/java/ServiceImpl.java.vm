@@ -4,31 +4,31 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 
-import ${packageName}.entity.${entityName};
-import ${packageName}.mapper.${mapperName};
-import ${packageName}.service.${serviceName};
+import ${packageName}.dao.${capitalMapperName};
+import ${packageName}.entity.${capitalEntityName};
+import ${packageName}.service.${capitalServiceName};
+
 
 /**
  *
- * @ClassName 类名：${serviceImplName}
- * @Description 功能说明： ${comments}
+ * @ClassName 类名：${capitalServiceImplName}
+ * @Description 功能说明： ${comments} 服务实现类
  *              <p>
  *              TODO
  *              </p>
  ***********************************************************************
- * @date 创建日期：${datetime}
+ * @date 创建日期：${createDate}
  * @author 创建人：${author}
  * @version 版本号：V1.0
  *          <p>
  ****************************修订记录************************************
  * 
- *          ${datetime} ${author} 创建该类功能。
+ *          ${createDate} ${author} 创建该类功能。
  *
  ***********************************************************************
  *          </p>
- */
+ */ 
 @Service
-public class ${serviceImplName} extends ServiceImpl<${mapperName}, ${entityName}> implements ${serviceName} {
+public class ${capitalServiceImplName} extends ServiceImpl<${capitalMapperName}, ${capitalEntityName}> implements ${capitalServiceName} {
 
 }
-

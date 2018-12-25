@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.baomidou.mybatisplus.plugins.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wiesel.generator.entity.TableField;
 import com.wiesel.generator.entity.TableInfo;
 
@@ -46,7 +46,7 @@ public interface GeneratorMapper {
 	 * @author 作者：wuj
 	 */
 	@SuppressWarnings("rawtypes")
-	Page<TableInfo> queryTablePage(@Param("page")Page page,@Param("tableName")String tableName,@Param("owner")String owner);
+	IPage<TableInfo> queryTablePage(@Param("page")IPage page,@Param("tableName")String tableName,@Param("owner")String owner);
 
 	/**
 	 * 

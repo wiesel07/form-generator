@@ -1,156 +1,118 @@
 package ${packageName}.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
-import com.wiesel.common.enums.ErrorCode;
 
-import com.wiesel.system.controller.req.${reqEntityName};
-
-import ${packageName}.entity.${entityName};
-import ${packageName}.service.${serviceName};
-import cn.hutool.core.bean.BeanUtil;
+import cn.com.bosssoft.egov.asset.common.entity.CommonResp;
+import cn.com.bosssoft.egov.asset.common.entity.PageResp;
+import cn.com.bosssoft.egov.asset.common.util.BeanUtilsExt;
+import cn.com.bosssoft.egov.asset.common.util.CollectionUtilsExt;
+import cn.com.bosssoft.egov.asset.common.util.ObjectUtilsExt;
+import cn.com.bosssoft.egov.asset.smart.basic.biz.common.exception.BasicError;
+import cn.com.bosssoft.egov.asset.smart.basic.biz.common.exception.BasicException;
+import cn.com.bosssoft.egov.asset.smart.basic.biz.constant.BasicUrlConstant;
+import ${packageName}.controller.req.${capitalEntityPageReqName};
+import ${packageName}.controller.req.${capitalEntityReqName};
+import ${packageName}.entity.${capitalEntityName};
+import ${packageName}.service.${capitalServiceName};
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import springfox.documentation.annotations.ApiIgnore;
-import wiesel.common.api.ApiResult;
-import wiesel.common.base.entity.PageReq;
-import wiesel.common.base.entity.PageResp;
 
 /**
  *
- * @ClassName 类名：${serviceImplName}
- * @Description 功能说明： ${comments}
+ * @ClassName 类名：${capitalControllerName}
+ * @Description 功能说明： ${comments} 前端控制器
  *              <p>
  *              TODO
  *              </p>
  ***********************************************************************
- * @date 创建日期：${datetime}
+ * @date 创建日期：${createDate}
  * @author 创建人：${author}
  * @version 版本号：V1.0
  *          <p>
  ****************************修订记录************************************
  * 
- *          ${datetime} ${author} 创建该类功能。
+ *          ${createDate} ${author} 创建该类功能。
  *
  ***********************************************************************
  *          </p>
- */
-@Controller
-@RequestMapping("#if(${moduleName}!='' )/${moduleName}#end/${pathName}")
-public class ${controllerName} {
+ */ 
+@Api(tags = "${comments}")
+@RestController
+@RequestMapping("#if(${moduleName}!='' )/${moduleName}#end/${path}")
+public class ${capitalControllerName} { 
+    
+    @Autowired
+	private ${capitalServiceName} ${serviceImplName};
 
-	private String prefix = "#if(${moduleName}!='' )${moduleName}#end/${classname}";
+	@ApiOperation(value = "获取列表(分页)", notes = "获取列表(分页)")
+	@GetMapping(BasicUrlConstant.QUERY_PAGE)
+	public CommonResp<PageResp<${capitalEntityName}>> queryPages(${capitalEntityPageReqName} ${entityPageReqName}) {
 
-	@Autowired
-	private ${serviceName} ${IServiceImpl};
+		Page<${capitalEntityName}> page = new Page<>(${entityPageReqName}.getPageNo(), ${entityPageReqName}.getPageSize());
 
-	@ApiIgnore
-	@GetMapping()
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:${classname}")
-	String ${classname}() {
-		return prefix + "/${classname}";
-	}
+		${capitalEntityName} ${entityName} = new ${capitalEntityName}();
+		BeanUtilsExt.copyProperties(${entityPageReqName}, ${entityName});
+		EntityWrapper<${capitalEntityName}> wrapper = new EntityWrapper<>(${entityName});
+		page = ${serviceImplName}.selectPage(page, wrapper);
 
-	@ApiOperation(value = "获取列表", notes = "")
-	@ResponseBody
-	@GetMapping("/list")
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:${classname}")
-	ApiResult<PageResp<${entityName}>> list(PageReq<${entityName}> pageReq) {
-
-		Page<${entityName}> page = new Page<${entityName}>(pageReq.getPageNo(), pageReq.getPageSize());
-		EntityWrapper<${entityName}> wrapper = new EntityWrapper<>();
-
-		page = ${IServiceImpl}.selectPage(page, wrapper);
-
-		PageResp<${entityName}> pageResp = new PageResp<${entityName}>();
+		PageResp<${capitalEntityName}> pageResp = new PageResp<${capitalEntityName}>();
 		pageResp.setRows(page.getRecords());
 		pageResp.setTotal(page.getTotal());
-		return ApiResult.ok(pageResp);
+		return new CommonResp<PageResp<${capitalEntityName}>>(pageResp);
 	}
 
-	@ApiOperation(value = "新增")
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:add")
-	@GetMapping("/add")
-	String add() {
-		return prefix + "/add";
+	@ApiOperation(value = "新增", notes = "新增")
+	@PostMapping(BasicUrlConstant.CREATE)
+	public CommonResp<String> create(${capitalEntityReqName} ${entityReqName}) {
+
+		${capitalEntityName} ${entityName} = new ${capitalEntityName}();
+		BeanUtilsExt.copyProperties(${entityReqName}, ${entityName});
+		${serviceImplName}.insert(${entityName});
+		return new CommonResp<>();
 	}
 
-	@ApiOperation(value = "编辑")
-	@GetMapping("/edit/{id}")
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:edit")
-	String edit(@PathVariable("${pk.attrname}") String ${pk.attrname}, Model model) {
-		${entityName} ${classname} = ${IServiceImpl}.selectById(Long.valueOf(${pk.attrname}));
-		model.addAttribute("${classname}", ${classname});
+	@ApiOperation(value = "修改", notes = "修改")
+	@PostMapping(BasicUrlConstant.UPDATE)
+	public CommonResp<String> update(${capitalEntityName} ${entityName}) {
 
-		return prefix + "/edit";
+		${serviceImplName}.insert(${entityName});
+		return new CommonResp<>();
 	}
 
-
-	@ApiOperation(value = "保存")
-	@ResponseBody
-	@PostMapping("/save")
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:add")
-	public ApiResult<String> save(${reqEntityName} ${reqEntityname}) {
-		${entityName} ${classname}= new ${entityName}();
-		BeanUtil.copyProperties(${reqEntityname}, ${classname});
-		${IServiceImpl}.insert(${classname});
-		return ApiResult.ok();
-	}
-
-
-	@ApiOperation(value = "修改")
-	@ResponseBody
-	@RequestMapping("/update")
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:edit")
-	public ApiResult<String> update(${reqEntityName} ${reqEntityname}) {
-		${entityName} ${classname}= new ${entityName}();
-		BeanUtil.copyProperties(${reqEntityname}, ${classname});
-		${IServiceImpl}.updateById(${classname});
-
-		return ApiResult.ok();
-	}
-
-	@ApiOperation(value = "删除")
-	@PostMapping("/delete")
-	@ResponseBody
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:delete")
-	public  ApiResult<String> delete(String ${pk.attrname}) {
-		if (StringUtils.isEmpty(${pk.attrname})) {
-			return ApiResult.error(ErrorCode.PARAM_IS_NULL);
-		}
-		${IServiceImpl}.deleteById(Long.valueOf(${pk.attrname}));
-		return ApiResult.ok();
-	}
-
-
-	@ApiOperation(value = "批量删除")
-	@PostMapping("/batchDelete")
-	@ResponseBody
-	@RequiresPermissions("#if(${moduleName}!='' )${moduleName}:#end${classname}:batchDelete")
-	public  ApiResult<String> batchDelete(String[] ${pk.attrname}s) {
-		if (${pk.attrname}s==null||${pk.attrname}s.length <= 0) {
-			return ApiResult.error(ErrorCode.PARAM_IS_NULL);
-		}
-		List<Long> delIds = new ArrayList<>();
-		for (String ${pk.attrname} : ${pk.attrname}s) {
-			delIds.add(Long.valueOf(${pk.attrname}));
+	@ApiOperation(value = "删除", notes = "删除")
+	@PostMapping(BasicUrlConstant.DELETE)
+	public CommonResp<String> delete(String id) {
+		if (ObjectUtilsExt.isNull(${serviceImplName}.selectById(id))) {
+			throw new BasicException(BasicError.DICT_IS_NOTEXIST);
 		}
 
-		${IServiceImpl}.deleteBatchIds(delIds);
+		if (!${serviceImplName}.deleteById(id)) {
+			throw new BasicException(BasicError.DICT_SQL_DELETE_ERROR);
+		}
+		return new CommonResp<>();
 
-		return ApiResult.ok();
 	}
+
+	@ApiOperation(value = "批量删除", notes = "批量删除")
+	@PostMapping(BasicUrlConstant.BATCH_DELETE)
+	public CommonResp<String> batchDelete(@RequestParam("ids[]") String[] ids) {
+
+		if (ids == null || ids.length <= 0) {
+			throw new BasicException(BasicError.CHECK_NOT_READABLE);
+		}
+
+		if (!${serviceImplName}.deleteBatchIds(CollectionUtilsExt.newArrayList(ids))) {
+			throw new BasicException(BasicError.DICT_SQL_DELETE_ERROR);
+		}
+		return new CommonResp<>();
+	}
+
 }

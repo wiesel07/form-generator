@@ -18,7 +18,6 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
-import com.alibaba.druid.support.json.JSONUtils;
 import com.wiesel.common.config.properties.GeneratorProperties;
 import com.wiesel.common.enums.DbColumnType;
 import com.wiesel.common.enums.IColumnType;
@@ -27,6 +26,7 @@ import com.wiesel.generator.entity.TableInfo;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +61,7 @@ public class GenUtils {
 		VelocityContext context = getVelocityContext(generatorProperties, tableInfo, tableFields);
 
 		// 获取模板列表
-		List<String> templates = getTemplates(false);
+		List<String> templates = getTemplates();
 		for (String template : templates) {
 			// 渲染模板
 			StringWriter sw = new StringWriter();
@@ -83,44 +83,6 @@ public class GenUtils {
 
 	}
 
-	// 有明细表的表单生成
-	public void generatorCode(TableInfo tableInfo, List<TableField> tableFields, TableInfo detailTableInfo,
-			List<TableField> detailTableFields, ZipOutputStream zip) {
-		GeneratorProperties generatorProperties = GeneratorProperties.getGeneratorProperties();
-		tableInfo = getTableInfo(generatorProperties, tableInfo, tableFields);
-		detailTableInfo = getTableInfo(generatorProperties, detailTableInfo, detailTableFields);
-		VelocityContext context = getVelocityContext(generatorProperties, tableInfo, tableFields, detailTableInfo,
-				detailTableFields);
-
-		// 获取模板列表
-		List<String> templates = getTemplates(true);
-		for (String template : templates) {
-			// 渲染模板
-			StringWriter sw = new StringWriter();
-			Template tpl = Velocity.getTemplate(template, "UTF-8");
-			tpl.merge(context, sw);
-			try {
-				// 添加到zip
-				log.info(template);
-
-				if (template.contains("DetailEntity.java.vm")) {
-					zip.putNextEntry(new ZipEntry(getFileName(template, detailTableInfo, generatorProperties)));
-				} else {
-					zip.putNextEntry(new ZipEntry(getFileName(template, tableInfo, generatorProperties)));
-				}
-
-				IOUtils.write(sw.toString(), zip, "UTF-8");
-
-				IOUtils.closeQuietly(sw);
-				zip.closeEntry();
-			} catch (IOException e) {
-				e.printStackTrace();
-				log.info("渲染模板失败，表名：" + tableInfo.getTableName());
-			}
-		}
-
-	}
-
 	/**
 	 * 获取文件名
 	 */
@@ -130,149 +92,98 @@ public class GenUtils {
 		String classname = tableInfo.getClassName();
 
 		String capitalEntityName = String.format(generatorProperties.getEntityName(), capitalClassName);
+		String capitalEntityReqName= capitalEntityName+"Req";
+		String capitalEntityPageReqName= capitalEntityName+"PageReq";
+		
 		String capitalMapperName = String.format(generatorProperties.getMapperName(), capitalClassName);
 		String capitalXmlName = String.format(generatorProperties.getXmlName(), capitalClassName);
 		String capitalServiceName = String.format(generatorProperties.getServiceName(), capitalClassName);
 		String capitalServiceImplName = String.format(generatorProperties.getServiceImplName(), capitalClassName);
 		String capitalControllerName = String.format(generatorProperties.getControllerName(), capitalClassName);
 		String packagePath = "";
-		if (template.contains("Entity.java.vm") || template.contains("DetailEntity.java.vm")) {
-			packagePath = generatorProperties.getApiPath() + File.separator + generatorProperties.getModuleName()
-					+ File.separator + "entity" + File.separator + capitalEntityName + ".java";
-			return packagePath;
-		}
-		if (template.contains("Service.java.vm")) {
-			packagePath = generatorProperties.getApiPath() + File.separator + generatorProperties.getModuleName()
-					+ File.separator + "service" + File.separator + capitalServiceName + ".java";
-			return packagePath;
-		}
+//		if (template.contains("Entity.java.vm") ) {
+//			packagePath = generatorProperties.getApiPath() + File.separator + generatorProperties.getModuleName()
+//					+ File.separator + "entity" + File.separator + capitalEntityName + ".java";
+//			return packagePath;
+//		}
+//		if (template.contains("Service.java.vm")&& (!template.equals("ServiceImpl.java.vm"))) {
+//			packagePath = generatorProperties.getSpiPath() + File.separator + generatorProperties.getModuleName()
+//					+ File.separator + "service" + File.separator + capitalServiceName + ".java";
+//			return packagePath;
+//		}
+//		if (template.contains("ServiceImpl.java.vm")) {
+//			packagePath = generatorProperties.getSpiPath() + File.separator + generatorProperties.getModuleName()
+//					+ File.separator + "service" + File.separator +"impl"+File.separator+ capitalServiceImplName + ".java";
+//			return packagePath;
+//		}
+//		if (template.contains("Dao.java.vm")) {
+//			packagePath = generatorProperties.getMybatisPath() + File.separator + generatorProperties.getModuleName()
+//					+ File.separator + "dao" + File.separator+ capitalMapperName + ".java";
+//			return packagePath;
+//		}
+//		if (template.contains("Mapper.xml.vm")) {
+//			packagePath = generatorProperties.getXmlPath() + File.separator + generatorProperties.getModuleName()
+//					+ File.separator+ capitalXmlName + ".xml";
+//			return packagePath;
+//		}
 
-		// String packagePath = "src" + File.separator + "main" + File.separator
-		// + "java";
-		// if (StringUtils.isNotBlank(packageName)) {
-		// packagePath += File.separator + packageName.replace(".",
-		// File.separator);
-		// }
-		// if (StringUtils.isNotBlank(moduleName)) {
-		// packagePath += File.separator + moduleName;
-		// }
-		//
-		// if (template.contains("Entity.java.vm") && !template.contains("Req"))
-		// {
-		// return packagePath + File.separator + "entity" + File.separator +
-		// entityName + ".java";
-		// }
-		//
-		// if (template.contains("Mapper.java.vm")) {
-		// return packagePath + File.separator + "mapper" + File.separator +
-		// mapperName + ".java";
-		// }
-		//
-		// if (template.contains("Service.java.vm")) {
-		// return packagePath + File.separator + "service" + File.separator +
-		// serviceName + ".java";
-		// }
-		//
-		// if (template.contains("ServiceImpl.java.vm")) {
-		// return packagePath + File.separator + "service" + File.separator +
-		// "impl" + File.separator + serviceImplName
-		// + ".java";
-		// }
-		//
-		// if (template.contains("Controller.java.vm")) {
-		// return packagePath + File.separator + "controller" + File.separator +
-		// controllerName + ".java";
-		// }
-		//
-		// if (template.contains("ReqEntity.java.vm")) {
-		// return packagePath + File.separator + "controller" + File.separator +
-		// "req" + File.separator + reqEntityName
-		// + ".java";
-		// }
-		//
-		// // html
-		// String htmlPrefix = "src" + File.separator + "main" + File.separator
-		// + "resources";
-		// String jsPrefix = "src" + File.separator + "main" + File.separator +
-		// "resources";
-		// String xmlPrefix = "src" + File.separator + "main" + File.separator +
-		// "resources";
-		// if (StrUtil.isNotBlank(moduleName)) {
-		// htmlPrefix += File.separator + "templates" + File.separator +
-		// moduleName;
-		// jsPrefix += File.separator + "static" + File.separator + "js" +
-		// File.separator + "app" + File.separator
-		// + moduleName;
-		// xmlPrefix += File.separator + "mapper" + File.separator + moduleName;
-		// } else {
-		// htmlPrefix += File.separator + "templates";
-		// jsPrefix += File.separator + "static" + File.separator + "js" +
-		// File.separator + "app";
-		// xmlPrefix += File.separator + "mapper";
-		// }
-		//
-		// if (template.contains("Mapper.xml.vm")) {
-		// return xmlPrefix + File.separator + xmlName + ".xml";
-		// }
-		//
-		// if (template.contains("list.html.vm")) {
-		// return htmlPrefix + File.separator + classname + File.separator +
-		// classname + ".html";
-		// }
-		//
-		// if (template.contains("add.html.vm")) {
-		// return htmlPrefix + File.separator + classname + File.separator +
-		// "add.html";
-		// }
-		// if (template.contains("edit.html.vm")) {
-		// return htmlPrefix + File.separator + classname + File.separator +
-		// "edit.html";
-		// }
-		//
-		// // js
-		// if (template.contains("list.js.vm")) {
-		// return jsPrefix + File.separator + classname + File.separator +
-		// classname + ".js";
-		// }
-		//
-		// if (template.contains("add.js.vm")) {
-		// return jsPrefix + File.separator + classname + File.separator +
-		// "add.js";
-		// }
-		//
-		// if (template.contains("edit.js.vm")) {
-		// return jsPrefix + File.separator + classname + File.separator +
-		// "edit.js";
-		// }
-		//
-		// if (template.contains("menu.sql.vm")) {
-		// return classname + "_menu.sql";
-		// }
+		if (template.contains("Entity.java.vm")) {
+			packagePath = generatorProperties.getApiPath() + File.separator + capitalEntityName + ".java";
+			return packagePath;
+		}
+		if (template.contains("Service.java.vm") && (!template.contains("ServiceImpl.java.vm"))) {
+			packagePath = generatorProperties.getSpiPath() + File.separator + "service" + File.separator
+					+ capitalServiceName + ".java";
+			return packagePath;
+		}
+		if (template.contains("ServiceImpl.java.vm")) {
+			packagePath = generatorProperties.getSpiPath() + File.separator + "service" + File.separator + "impl"
+					+ File.separator + capitalServiceImplName + ".java";
+			return packagePath;
+		}
+		if (template.contains("Dao.java.vm")) {
+			packagePath = generatorProperties.getMybatisPath() + File.separator + capitalMapperName + ".java";
+			return packagePath;
+		}
+		
+		if (template.contains("Controller.java.vm")) {
+			packagePath = generatorProperties.getWebPath() + File.separator + capitalControllerName + ".java";
+			return packagePath;
+		}
+		
+		if (template.contains("EntityReq.java.vm")) {
+			packagePath = generatorProperties.getWebPath() + File.separator +"req"+File.separator+ capitalEntityReqName + ".java";
+			return packagePath;
+		}
+		
+		
+		if (template.contains("EntityPageReq.java.vm")) {
+			packagePath = generatorProperties.getWebPath() + File.separator +"req"+File.separator+ capitalEntityPageReqName + ".java";
+			return packagePath;
+		}
+		
+		if (template.contains("Mapper.xml.vm")) {
+			packagePath = generatorProperties.getXmlPath() + File.separator + capitalXmlName + ".xml";
+			return packagePath;
+		}
+		
+		
 
 		return null;
 	}
 
-	public List<String> getTemplates(Boolean isHasDetailTable) {
+	public List<String> getTemplates() {
 		List<String> templates = new ArrayList<String>();
 
-		templates.add("vm/java/entity/Entity.java.vm");
-		templates.add("vm/java/service/Service.java.vm");
-		if (isHasDetailTable) {
-			templates.add("vm/java/entity/DetailEntity.java.vm");
-		} else {
-
-			// templates.add("vm/java/Mapper.java.vm");
-			// templates.add("vm/java/Service.java.vm");
-			// templates.add("vm/java/ServiceImpl.java.vm");
-			// templates.add("vm/java/Controller.java.vm");
-			//
-			// templates.add("vm/xml/Mapper.xml.vm");
-			// templates.add("vm/xml/index.xml.vm");
-			// templates.add("vm/xml/add.xml.vm");
-			//
-			// templates.add("vm/js/index.js.vm");
-			// templates.add("vm/js/add.js.vm");
-		}
+		templates.add("vm/java/Entity.java.vm");
+		templates.add("vm/java/Service.java.vm");
+		templates.add("vm/java/ServiceImpl.java.vm");
+		templates.add("vm/java/Dao.java.vm");
+		templates.add("vm/java/Controller.java.vm");
+		templates.add("vm/java/EntityPageReq.java.vm");
+		templates.add("vm/java/EntityReq.java.vm");
+		templates.add("vm/xml/Mapper.xml.vm");
+		// templates.add("vm/java/service/Service.java.vm");
 
 		return templates;
 	}
@@ -284,28 +195,8 @@ public class GenUtils {
 		Properties prop = new Properties();
 		prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 		Velocity.init(prop);
-		Map<String, Object> result = new HashMap<>();
-		Map<String, Object> main = assembleData(generatorProperties, tableInfo);
+		Map<String, Object> result = assembleData(generatorProperties, tableInfo);
 
-		result.put("main", main);
-		result.put("author", generatorProperties.getAuthor());
-		result.put("createDate", DateUtil.format(DateUtil.date(), DatePattern.NORM_DATE_PATTERN));
-		return new VelocityContext(result);
-	}
-
-	private VelocityContext getVelocityContext(GeneratorProperties generatorProperties, TableInfo tableInfo,
-			List<TableField> tableFields, TableInfo detailTableInfo, List<TableField> detailTableFields) {
-
-		// 设置velocity资源加载器
-		Properties prop = new Properties();
-		prop.put("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-		Velocity.init(prop);
-
-		Map<String, Object> result = new HashMap<>();
-		Map<String, Object> main = assembleData(generatorProperties, tableInfo);
-		Map<String, Object> detail = assembleData(generatorProperties, detailTableInfo);
-		result.put("main", main);
-		result.put("detail", detail);
 		result.put("author", generatorProperties.getAuthor());
 		result.put("createDate", DateUtil.format(DateUtil.date(), DatePattern.NORM_DATE_PATTERN));
 		return new VelocityContext(result);
@@ -321,6 +212,7 @@ public class GenUtils {
 		map.put("comments", tableInfo.getComments());
 		map.put("pk", tableInfo.getPk());
 		map.put("className", tableInfo.getClassName());
+		map.put("path", tableInfo.getClassName());
 		map.put("capitalClassname", capitalClassName);
 		map.put("tableFields", tableInfo.getTableFields());
 		map.put("parent", generatorProperties.getParent());
@@ -338,7 +230,11 @@ public class GenUtils {
 		// 实体
 		String capitalEntityName = String.format(generatorProperties.getEntityName(), capitalClassName);
 		map.put("capitalEntityName", capitalEntityName);
-		map.put("entityName", capitalEntityName);
+		map.put("capitalEntityReqName", capitalEntityName+"Req");
+		map.put("capitalEntityPageReqName", capitalEntityName+"PageReq");
+		map.put("entityName",  StringUtils.uncapitalize(capitalEntityName));
+		map.put("entityReqName",  StringUtils.uncapitalize(capitalEntityName)+"Req");
+		map.put("entityPageReqName",  StringUtils.uncapitalize(capitalEntityName)+"PageReq");
 
 		// mapper
 		String capitalMapperName = String.format(generatorProperties.getMapperName(), capitalClassName);
@@ -352,8 +248,11 @@ public class GenUtils {
 		map.put("capitalServiceName", capitalServiceName);
 		map.put("serviceName", StringUtils.uncapitalize(capitalServiceName));
 
-		map.put("serviceImplName", String.format(generatorProperties.getServiceImplName(), capitalClassName));
-		map.put("controllerName", String.format(generatorProperties.getControllerName(), capitalClassName));
+		String capitalServiceImplName = String.format(generatorProperties.getServiceImplName(), capitalClassName);
+		map.put("capitalServiceImplName", capitalServiceImplName);
+		map.put("serviceImplName", StringUtils.uncapitalize(capitalServiceImplName));
+		
+		map.put("capitalControllerName", String.format(generatorProperties.getControllerName(), capitalClassName));
 
 		return map;
 	}
@@ -378,6 +277,9 @@ public class GenUtils {
 			if ("PRI".equalsIgnoreCase(tableField.getKeys()) && tableField.getKeys() == null) {
 				tableInfo.setPk(tableField);
 			}
+		}
+		if (ObjectUtil.isNull(tableInfo.getPk())) {
+			tableInfo.setPk(tableFields.get(0));
 		}
 		tableInfo.setTableFields(tableFields);
 		return tableInfo;
@@ -424,7 +326,7 @@ public class GenUtils {
 		} else if (t.contains("date") || t.contains("timestamp")) {
 			// switch (globalConfig.getDateType()) {
 			// case ONLY_DATE:
-			// return DbColumnType.DATE;
+			return DbColumnType.DATE;
 			// case SQL_PACK:
 			// return DbColumnType.TIMESTAMP;
 			// case TIME_PACK:
@@ -440,7 +342,8 @@ public class GenUtils {
 		} else if (t.contains("float")) {
 			return DbColumnType.FLOAT;
 		} else if (t.contains("clob")) {
-			return DbColumnType.CLOB;
+		//	return DbColumnType.CLOB;
+			return DbColumnType.STRING;
 		} else if (t.contains("blob")) {
 			return DbColumnType.BLOB;
 		} else if (t.contains("binary")) {

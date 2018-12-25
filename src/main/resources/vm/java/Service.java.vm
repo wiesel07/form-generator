@@ -1,28 +1,28 @@
 package ${packageName}.service;
 
-import ${packageName}.entity.${entityName};
-
 import com.baomidou.mybatisplus.service.IService;
+
+import ${packageName}.entity.${capitalEntityName};
 
 /**
  *
- * @ClassName 类名：${serviceName}
- * @Description 功能说明： ${comments}
+ * @ClassName 类名：${capitalServiceName}
+ * @Description 功能说明： ${comments} 服务类
  *              <p>
  *              TODO
  *              </p>
  ***********************************************************************
- * @date 创建日期：${datetime}
+ * @date 创建日期：${createDate}
  * @author 创建人：${author}
  * @version 版本号：V1.0
  *          <p>
  ****************************修订记录************************************
  * 
- *          ${datetime} ${author} 创建该类功能。
+ *          ${createDate} ${author} 创建该类功能。
  *
  ***********************************************************************
  *          </p>
- */
-public interface ${serviceName} extends IService<${entityName}> {
+ */ 
+public interface ${capitalServiceName} extends IService<${capitalEntityName}> {
 
-}
+} 

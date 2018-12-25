@@ -31,6 +31,7 @@
 		<bpmnx.version>1.2.1-SNAPSHOT</bpmnx.version>
 		<activitix.version>5.23.3-SNAPSHOT</activitix.version>
 		<dubbo-spring-boot>2.0.0</dubbo-spring-boot>
+		<mybatis.plus.boot.starter.version>3.0.6</mybatis.plus.boot.starter.version>
 	</properties>
 
 
@@ -77,53 +78,6 @@
 			<scope>test</scope>
 		</dependency>
 
-	<!--dubbo 依赖 -->
-	<dependency>
-		<groupId>com.alibaba.spring.boot</groupId>
-		<artifactId>dubbo-spring-boot-starter</artifactId>
-		<version>${dubbo-spring-boot}</version>
-	</dependency>
-	<!-- zookeeper client依赖 -->
-	<dependency>
-		<groupId>com.101tec</groupId>
-		<artifactId>zkclient</artifactId>
-		<version>0.10</version>
-	</dependency>
-
-
-<!-- 		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
-			<version>2.5.3</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.zookeeper</groupId>
-			<artifactId>zookeeper</artifactId>
-			<version>3.4.6</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.sgroschupf</groupId>
-			<artifactId>zkclient</artifactId>
-			<version>0.1</version>
-		</dependency> -->
 
 
 		<!-- 阿里巴巴druid数据库连接池 -->
@@ -150,48 +104,22 @@
 		</dependency>
 
 		<!-- mybatisplus与springboot整合 -->
-		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatisplus-spring-boot-starter</artifactId>
-			<version>${mybatisplus.spring.boot.starter.version}</version>
-		</dependency>
+		<!-- <dependency> <groupId>com.baomidou</groupId> <artifactId>mybatisplus-spring-boot-starter</artifactId> 
+			<version>${mybatisplus.spring.boot.starter.version}</version> </dependency> -->
+
 		<!-- MP 核心库 -->
+		<!-- <dependency> <groupId>com.baomidou</groupId> <artifactId>mybatis-plus</artifactId> 
+			<version>${mybatisplus.version}</version> </dependency> -->
+
 		<dependency>
 			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus</artifactId>
-			<version>${mybatisplus.version}</version>
+			<artifactId>mybatis-plus-boot-starter</artifactId>
+			<version>${mybatis.plus.boot.starter.version}</version>
 		</dependency>
 
 		<!-- <dependency> <groupId>com.baomidou</groupId> <artifactId>mybatis-plus-boot-starter</artifactId> 
 			<version>3.0.1</version> </dependency> -->
 
-		<dependency>
-			<groupId>com.bosssoft.platform.bpmnx</groupId>
-			<artifactId>com.bosssoft.platform.bpmnx.rest</artifactId>
-			<version>1.2.1-SNAPSHOT</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>com.bosssoft.platform</groupId>
-			<artifactId>activitix-spi</artifactId>
-			<version>${activitix.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bosssoft.platform</groupId>
-			<artifactId>activitix-engine</artifactId>
-			<version>${activitix.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bosssoft.platform</groupId>
-			<artifactId>activitix-spring</artifactId>
-			<version>${activitix.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.bosssoft.platform.bpmnx</groupId>
-			<artifactId>com.bosssoft.platform.bpmnx.impl</artifactId>
-			<version>${bpmnx.version}</version>
-		</dependency>
 
 		<!-- 模板引擎 -->
 		<dependency>
@@ -218,7 +146,7 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
-<!-- 		<dependency>
+		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
@@ -227,7 +155,7 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
-		</dependency> -->
+		</dependency>
 
 		<!-- utils -->
 		<dependency>

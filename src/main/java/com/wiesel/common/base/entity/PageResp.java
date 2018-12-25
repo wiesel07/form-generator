@@ -31,7 +31,7 @@ public class PageResp<T> {
 	/**
 	 * 总数
 	 */
-	private int total;
+	private Long total;
 
 	/**
 	 * 数据

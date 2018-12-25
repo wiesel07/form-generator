@@ -28,7 +28,7 @@ spring:
     #url: jdbc:oracle:thin:@//192.168.10.180:1521/orcl
     #username: egams_qzss
     url: jdbc:oracle:thin:@192.168.10.180:1521/orcl
-    username: egams_qzss_test
+    username: asset_smart
     password: bs
     #driverClassName: com.mysql.jdbc.Driver
     #url: jdbc:mysql://47.98.201.218:3306/wiesel?useUnicode=true&characterEncoding=utf8&&allowMultiQueries=true

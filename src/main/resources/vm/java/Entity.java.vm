@@ -1,0 +1,84 @@
+package ${packageName}.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import com.baomidou.mybatisplus.activerecord.Model;
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableId;
+import com.baomidou.mybatisplus.annotations.TableLogic;
+import com.baomidou.mybatisplus.annotations.TableName;
+import com.baomidou.mybatisplus.enums.FieldFill;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
+
+/**
+ *
+ * @ClassName 类名：${capitalEntityName}
+ * @Description 功能说明： ${comments}
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+@Accessors(chain = true)
+@TableName("${tableName}")
+public class  ${capitalEntityName} extends Model<${capitalEntityName}> {
+
+    private static final long serialVersionUID = 1L; 
+ 
+#foreach ($tableField in $tableFields)
+	#if($tableField.comments!='' && $tableField.comments!="null" )
+    
+    /**
+	 * $tableField.comments
+	 */
+    #end
+    #if($tableField.propertyName==$pk.propertyName)
+    @TableId(value = "$tableField.columnName")
+    private $tableField.propertyType $tableField.propertyName;
+	#elseif($tableField.columnName=='CREATE_TIME')
+	@TableField(value = "$tableField.columnName", fill = FieldFill.INSERT)
+    private Date createTime;
+	#elseif($tableField.columnName=='MODIFY_TIME')
+	@TableField(value = "$tableField.columnName", fill = FieldFill.INSERT_UPDATE)
+    private Date modifyTime;
+    #elseif($tableField.columnName=='DEL_FLAG')
+    @TableField("$tableField.columnName")
+    @TableLogic
+    private $tableField.propertyType $tableField.propertyName;
+    #else
+    private $tableField.propertyType $tableField.propertyName;
+	#end
+#end
+    
+#foreach ($tableField in $tableFields)
+    public static final String $tableField.columnName = "$tableField.columnName";
+#end
+
+    @Override
+	protected Serializable pkVal() {
+		return this.${pk.propertyName};
+	}
+}

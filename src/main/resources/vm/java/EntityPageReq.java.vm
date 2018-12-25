@@ -1,0 +1,51 @@
+package ${packageName}.controller.req;
+
+import cn.com.bosssoft.egov.asset.common.entity.PageReq;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+/**
+ *
+ * @ClassName 类名：${capitalEntityPageReqName}
+ * @Description 功能说明： ${comments}
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+@Data
+@Builder
+@EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel("${comments}分页请求参数")
+public class ${capitalEntityPageReqName} extends PageReq<${capitalEntityPageReqName}>  {
+
+#foreach ($tableField in $tableFields)
+    
+    #if($tableField.propertyName==$pk.propertyName)
+	#elseif($tableField.columnName=='CREATE_TIME')
+	#elseif($tableField.columnName=='MODIFY_TIME')
+	#elseif($tableField.columnName=='DEL_FLAG')
+    #else
+    @ApiModelProperty(value ="$tableField.comments")
+    private $tableField.propertyType $tableField.propertyName;
+	#end
+#end
+	
+}

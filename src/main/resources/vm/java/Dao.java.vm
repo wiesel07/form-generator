@@ -1,28 +1,29 @@
-package ${packageName}.mapper;
+package ${packageName}.dao;
 
 import com.baomidou.mybatisplus.mapper.BaseMapper;
-import ${packageName}.entity.${entityName};
+
+import ${packageName}.entity.${capitalEntityName};
 
 /**
  *
- * @ClassName 类名：${mapperName}
+ * @ClassName 类名：${capitalMapperName}
  * @Description 功能说明： ${comments}
  *              <p>
  *              TODO
  *              </p>
  ***********************************************************************
- * @date 创建日期：${datetime}
+ * @date 创建日期：${createDate}
  * @author 创建人：${author}
  * @version 版本号：V1.0
  *          <p>
  ****************************修订记录************************************
  * 
- *          ${datetime} ${author} 创建该类功能。
+ *          ${createDate} ${author} 创建该类功能。
  *
  ***********************************************************************
  *          </p>
  */
-public interface ${mapperName} extends BaseMapper<${entityName}> {
+public interface ${capitalMapperName} extends BaseMapper<${capitalEntityName}> {
 
 }
  
