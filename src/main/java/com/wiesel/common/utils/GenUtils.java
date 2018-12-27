@@ -250,7 +250,7 @@ public class GenUtils {
 
 		String capitalServiceImplName = String.format(generatorProperties.getServiceImplName(), capitalClassName);
 		map.put("capitalServiceImplName", capitalServiceImplName);
-		map.put("serviceImplName", StringUtils.uncapitalize(capitalServiceImplName));
+		map.put("serviceImplName", StringUtils.uncapitalize(capitalServiceImplName).replace("Impl", ""));
 		
 		map.put("capitalControllerName", String.format(generatorProperties.getControllerName(), capitalClassName));
 
