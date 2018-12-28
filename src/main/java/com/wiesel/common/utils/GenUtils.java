@@ -209,7 +209,7 @@ public class GenUtils {
 
 		String capitalClassName = tableInfo.getCapitalClassName();
 		map.put("tableName", tableInfo.getTableName());
-		map.put("comments", tableInfo.getComments());
+		map.put("comments", org.apache.commons.lang3.StringUtils.trim(tableInfo.getComments()));
 		map.put("pk", tableInfo.getPk());
 		map.put("className", tableInfo.getClassName());
 		map.put("path", tableInfo.getClassName());
@@ -273,6 +273,7 @@ public class GenUtils {
 			String capitalName = columnToJava(tableField.getColumnName());
 			tableField.setCapitalName(capitalName);
 			tableField.setPropertyName(StringUtils.uncapitalize(capitalName));
+			tableField.setComments(org.apache.commons.lang3.StringUtils.trimToEmpty(tableField.getComments()));
 			// 是否主键
 			if ("PRI".equalsIgnoreCase(tableField.getKeys()) && tableField.getKeys() == null) {
 				tableInfo.setPk(tableField);

@@ -18,7 +18,7 @@ import cn.com.bosssoft.egov.asset.common.entity.PageResp;
 import cn.com.bosssoft.egov.asset.common.util.BeanUtilsExt;
 import cn.com.bosssoft.egov.asset.common.util.CollectionUtilsExt;
 import cn.com.bosssoft.egov.asset.common.util.ObjectUtilsExt;
-import ${packageName}.upms.biz.common.exception.UpmsError;
+import ${packageName}.common.exception.UpmsError;
 import ${packageName}.common.exception.UpmsException;
 import ${packageName}.common.constant.UpmsUrlConstant;
 import ${packageName}.controller.req.${capitalEntityPageReqName};
@@ -79,7 +79,7 @@ public class ${capitalControllerName} {
 		
 		${capitalEntityName} ${entityName} = new ${capitalEntityName}();
 		if (ObjectUtilsExt.isNull(${entityName})) {
-			throw new UpmsException(UpmsError.NOTICE_IS_NOTEXIST);
+			throw new UpmsException(UpmsError.DICT_IS_NOTEXIST);
 		}
 		return new CommonResp<${capitalEntityName}>(${entityName});
 	}
@@ -102,7 +102,7 @@ public class ${capitalControllerName} {
 		${capitalEntityName} ${entityName} = new ${capitalEntityName}();
 		BeanUtilsExt.copyProperties(${entityReqName}, ${entityName});
 		
-		if (!${serviceImplName}.updateById(${entityName}))) {
+		if (!${serviceImplName}.updateById(${entityName})) {
 			throw new UpmsException(UpmsError.DICT_SQL_UPDATE_ERROR);
 		}
 		

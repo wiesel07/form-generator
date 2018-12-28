@@ -10,6 +10,9 @@ import com.baomidou.mybatisplus.annotations.TableLogic;
 import com.baomidou.mybatisplus.annotations.TableName;
 import com.baomidou.mybatisplus.enums.FieldFill;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,16 +47,18 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper=false)
 @Accessors(chain = true)
 @TableName("${tableName}")
+@ApiModel("${comments}")
 public class  ${capitalEntityName} extends Model<${capitalEntityName}> {
 
     private static final long serialVersionUID = 1L; 
  
 #foreach ($tableField in $tableFields)
-	#if($tableField.comments!='' && $tableField.comments!="null" )
+	#if($tableField.columnName=='CREATE_TIME' || $tableField.columnName=='MODIFY_TIME' || $tableField.columnName=='DEL_FLAG' )
     
-    /**
-	 * $tableField.comments
-	 */
+    @ApiModelProperty(value ="$tableField.comments",hidden=true)
+    #else
+    
+    @ApiModelProperty(value ="$tableField.comments")
     #end
     #if($tableField.propertyName==$pk.propertyName)
     @TableId(value = "$tableField.columnName")
