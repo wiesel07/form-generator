@@ -25,11 +25,13 @@ import com.wiesel.common.api.ApiResult;
 import com.wiesel.common.base.entity.PageReq;
 import com.wiesel.common.base.entity.PageResp;
 import com.wiesel.common.config.properties.GeneratorProperties;
+import com.wiesel.common.exception.ApiException;
 import com.wiesel.generator.entity.TableInfo;
 import com.wiesel.generator.req.TableInfoReq;
 import com.wiesel.generator.service.IGeneratorService;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -77,12 +79,11 @@ public class GeneratorController {
 
 		Page page = new Page(pageReq.getPageNo(), pageReq.getPageSize());
 		page = (Page) generatorService.queryTablePage(page, tableInfoReq.getTableName(), OWNER);
-		
+
 		PageResp<TableInfo> pageResp = new PageResp<TableInfo>();
 		pageResp.setRows(page.getRecords());
 		pageResp.setTotal(page.getTotal());
 
-	
 		return ApiResult.ok(pageResp);
 	}
 
@@ -171,6 +172,29 @@ public class GeneratorController {
 	@RequestMapping("/code/{tableName}")
 	public void code(HttpServletRequest request, HttpServletResponse response,
 			@PathVariable("tableName") String tableName) throws IOException {
+
+		GeneratorProperties generatorProperties = GeneratorProperties.getGeneratorProperties();
+
+		// 判断配置属性里是否有配置明细表属性，有判断表是否存在，获取相应明细表信息
+		String detailTableName = generatorProperties.getDetailTableName();
+		if (StrUtil.isEmpty(detailTableName)) {
+			throw new ApiException("策略配置中的明细表不能为空");
+		}
+		String xmlJsPath = generatorProperties.getXmlJsPath();
+		if (StrUtil.isEmpty(xmlJsPath)) {
+			throw new ApiException("xml中的js路径不能为空");
+		}
+
+		String businessType = generatorProperties.getBusinessType();
+		if (StrUtil.isEmpty(businessType)) {
+			throw new ApiException("业务类型不能为空");
+		}
+
+		String controllerReqPath = generatorProperties.getControllerReqPath();
+		if (StrUtil.isEmpty(controllerReqPath)) {
+			throw new ApiException("控制层请求路径前缀不能为空");
+		}
+
 		String[] tableNames = new String[] { tableName };
 		byte[] data = generatorService.generatorCode(tableNames, OWNER);
 		response.reset();

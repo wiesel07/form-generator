@@ -85,6 +85,11 @@ public class GeneratorProperties {
 	// 控制层请求路径
 	private String controllerReqPath;
 
+	// xml中的js路径
+	private String xmlJsPath;
+
+	private String businessType;
+
 	public static final String AUTHOR = "author";
 	public static final String PARENT = "parent";
 	public static final String MODULE_NAME = "moduleName";
@@ -105,7 +110,11 @@ public class GeneratorProperties {
 	public static final String JS_PATH = "jsPath";
 	public static final String JSP_PATH = "jspPath";
 
-	private String CONTROLLER_REQ_PATH = "controllerReqPath";
+	public static final String CONTROLLER_REQ_PATH = "controllerReqPath";
+
+	public static final String XML_JS_PATH = "xmlJsPath";
+
+	public static final String BUSINESS_TYPE = "businessType";
 
 	/**
 	 * 

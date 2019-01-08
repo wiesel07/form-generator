@@ -51,7 +51,7 @@ public class ${main.capitalServiceImplName} implements ${main.capitalServiceName
 
     private static Logger logger = LoggerFactory.getLogger(${main.capitalServiceImplName}.class);
 
-    private final static String BUSINESS_TYPE="BUSINESS_TYPE"; 
+    private final static String BUSINESS_TYPE="${main.businessType}"; 
 
 	// TODO 添加需要的Mapper
 	@Autowired

@@ -79,7 +79,7 @@
 					rownumbers="normal" autoLoad="false" title="${main.comments}列表">		
 					<columns>	
 					
-					   #foreach ($tableField in $main.tableFields)
+					 #foreach ($tableField in $main.tableFields)
 					   
 					   #if( $tableField.propertyName =='billCode' )
 						<XGridColumn field="$tableField.propertyName" title="$!tableField.comments" align="left" sortable="true"  showTitle="true" width="120"   formatter="$.formatGridClickCol" />
@@ -89,6 +89,7 @@
 						#else
 					    <XGridColumn field="$tableField.propertyName" title="$!tableField.comments" sortable="true"  showTitle="true" align="center" width="100"  />
 						#end
+					 #end
 					</columns>
 					<frozenColumnsRight>
 					</frozenColumnsRight>

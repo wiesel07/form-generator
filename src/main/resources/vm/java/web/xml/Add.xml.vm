@@ -28,7 +28,7 @@
 					style="padding:0px 0px 10px 0px">
 					<items>
 						<XGrid id="${detail.entityName}Page_grid"
-							url="$!{main.controllerReqPath/query${main.capitalEntityName}Page.do"
+							url="$!{main.controllerReqPath}/query${main.capitalEntityName}Page.do"
 							autoLoad="false" fit="true" checkbox="true" sort="true"
 							summaryPos="top" rownumbers="normal" fitColumns="E" title="明细"
 							editable="true" pager="none" summary="top">

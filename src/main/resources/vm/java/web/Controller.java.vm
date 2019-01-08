@@ -77,7 +77,7 @@ import com.bosssoft.platform.ui.tags.UIConst;
 @RequestMapping("$!{main.controllerReqPath}")
 public class ${main.capitalControllerName} {
   
-    private final static String BUSINESS_TYPE="BUSINESS_TYPE"; 
+    private final static String BUSINESS_TYPE="${main.businessType}"; 
   
     @Autowired
 	private ${main.capitalServiceName} ${main.serviceName};

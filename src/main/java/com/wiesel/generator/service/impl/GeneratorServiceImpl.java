@@ -64,9 +64,6 @@ public class GeneratorServiceImpl implements IGeneratorService {
 
 		// 判断配置属性里是否有配置明细表属性，有判断表是否存在，获取相应明细表信息
 		String detailTableName = generatorProperties.getDetailTableName();
-		if (StrUtil.isEmpty(detailTableName)) {
-			throw new ApiException("策略配置中的明细表不能为空");
-		}
 
 		TableInfo detailTableInfo = generatorMapper.queryTablePage(new Page<>(), detailTableName, owner)
 				.get(0);
