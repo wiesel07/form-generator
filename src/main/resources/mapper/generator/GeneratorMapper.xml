@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.wiesel.generator.mapper.GeneratorMapper">
+
 	<select id="queryTablePage"
 		resultType="com.wiesel.generator.entity.TableInfo">
 		SELECT *
@@ -13,6 +14,15 @@
 		</if>
 	</select>
 
+	<select id="queryTableCount"
+		resultType="java.lang.Integer">
+		SELECT count(*)
+		FROM ALL_TAB_COMMENTS
+		WHERE OWNER = upper(#{owner})
+		<if test="tableName != null and tableName.trim() != ''">
+			and table_name like concat(concat('%',upper(#{tableName})),'%')
+		</if>
+	</select>
 
 	<select id="queryTableFields"
 		resultType="com.wiesel.generator.entity.TableField">

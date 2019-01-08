@@ -1,0 +1,901 @@
+package ${main.packageName}.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.bosssoft.egov.aims.BillStatus;
+import com.bosssoft.egov.aims.BizStatus;
+import com.bosssoft.egov.aims.EditStatus;
+import com.bosssoft.egov.aims.api.IdManager;
+import com.bosssoft.egov.aims.batchOpe.entity.BatchResult;
+import ${main.packageName}.entity.${main.capitalEntityName};   
+import ${main.packageName}.entity.${detail.capitalEntityName};
+import ${main.packageName}.service.${main.capitalServiceName};   
+import ${main.packageName}.service.${detail.capitalServiceName};
+import com.bosssoft.egov.aims.config.service.SysConfigHelper;
+import com.bosssoft.egov.aims.utils.ResultUtils;
+import com.bosssoft.egov.asset.activiti.entity.ActivitiException;
+import com.bosssoft.egov.asset.activiti.entity.ActivitiParams;
+import com.bosssoft.egov.asset.activiti.entity.HandleType;
+import com.bosssoft.egov.asset.activiti.entity.ProcessResult;
+import com.bosssoft.egov.asset.activiti.entity.TaskStatus;
+import com.bosssoft.egov.asset.activiti.service.ActivitiProcessService;
+import com.bosssoft.egov.asset.bizlog.api.BizLogHelper;
+import com.bosssoft.egov.asset.bizlog.entity.ApiBizLog;
+import com.bosssoft.egov.asset.bizlog.entity.BizOperConst;
+import com.bosssoft.egov.asset.codegen.CodeGen;
+import com.bosssoft.egov.asset.common.util.DateUtilsExt;
+import com.bosssoft.egov.asset.common.util.MapUtilsExt;
+import com.bosssoft.egov.asset.common.util.NumberUtilsExt;
+import com.bosssoft.egov.asset.common.util.SpringObjectUtilsExt;
+import com.bosssoft.egov.asset.common.util.StringUtilsExt;
+import com.bosssoft.egov.asset.log.annotations.Operation;
+import com.bosssoft.egov.asset.runtime.User;
+import com.bosssoft.egov.asset.runtime.web.context.AppContext;
+import com.bosssoft.platform.common.lang.data.Page;
+import com.bosssoft.platform.common.lang.data.Searcher;
+import com.bosssoft.platform.common.lang.expression.Operator;
+import com.bosssoft.platform.runtime.exception.BusinessException;
+import com.bosssoft.platform.runtime.web.binding.annotation.AjaxResponseBody;
+import com.bosssoft.platform.runtime.web.context.WebApplicationContext;
+import com.bosssoft.platform.runtime.web.response.AjaxResult;
+import com.bosssoft.platform.runtime.web.response.GridData;
+import com.bosssoft.platform.runtime.web.response.PageResult;
+import com.bosssoft.platform.ui.tags.UIConst;
+
+
+/**
+ *
+ * @ClassName 类名：${main.capitalControllerName}
+ * @Description 功能说明： ${main.comments}控制层
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+@Controller
+@RequestMapping("$!{main.controllerReqPath}")
+public class ${main.capitalControllerName} {
+  
+    private final static String BUSINESS_TYPE="BUSINESS_TYPE"; 
+  
+    @Autowired
+	private ${main.capitalServiceName} ${main.serviceName};
+
+	@Autowired
+	private ${detail.capitalServiceName} ${detail.serviceName};
+
+	@Autowired
+	private ActivitiProcessService activitiProcessService;
+
+
+	/**
+	 * 列表页面
+	 */
+	@RequestMapping(value = "showIndex.do", name = "${main.comments}入口页面")
+	public String showIndex(Model model) {
+		// 获取对数据操作的权限（编辑或查看）aaaaa
+		Map<String, Object> params = WebApplicationContext.getContext().getWebRequestContext().getRequestParamsMap();
+		Map<String, Object> data = new HashMap<String, Object>();
+
+		data.put("params", MapUtilsExt.copyNewMap(params));
+
+		model.addAllAttributes(data);
+		model.addAttribute(UIConst.UIPAGEMODEL, data);
+		return "$!{main.controllerReqPath}/${main.classname}_index.ui";
+	}
+
+	/**
+	 * 新增页面
+	 */
+	@RequestMapping(value = "showAdd.do", name = "bankBalance_index新增页面")
+	public String showAdd(Model model) {
+		User user = AppContext.getAppContext().getSessionUser();
+
+		${main.capitalEntityName} ${main.entityName} = new ${main.capitalEntityName}();
+
+		// 设置单位负责人 ,经办人 ,经办人电话
+		// ${main.entityName}.setOrgLeader(user.getAgenPrincipal());
+		${main.entityName}.setOperator(user.getUserName());
+
+		${main.entityName}.setBillId(IdManager.newWKID());
+		// 设置编制单位，编制者，创建时间
+		${main.entityName}.setOrgName(user.getOrgName());
+		// aimsUse.setCreator(user.getUserCode() + " " + user.getUserName());
+		${main.entityName}.setCreatedate(DateUtilsExt.getNowDateTime());
+
+		// // 设置单据日期
+		${main.entityName}.setBillDate(DateUtilsExt.getCurrentDate());
+
+		// 单据状态默认设置为暂存
+		${main.entityName}.setBizStatus(BizStatus.TMP_SAVE.STATUS);
+		${main.entityName}.setBizStatusName(BizStatus.TMP_SAVE.NAME);
+
+		// 基本信息赋值
+		model.addAttribute("${main.entityName}", ${main.entityName});
+
+		// 存储结果
+		Map<String, Object> data = new HashMap<String, Object>();
+
+		data.put("curBillStatus", 1);
+		data.put("curMaker", user.getUserName());// 制单人
+
+		// 当前编辑情况添加到modal
+		data.put("curEditStatus", EditStatus.ADD.STATUS);
+		// 使用实体存入data集合
+		data.put("${main.entityName}", ${main.entityName});
+		// 该日期将用于与使用日期校验判断
+		data.put("curDate", DateUtilsExt.getNowDate());
+
+		// 5、获取对数据操作的权限（编辑或查看） 最细级判断
+		Map<String, Object> params = WebApplicationContext.getContext().getWebRequestContext().getRequestParamsMap();
+		data.put("params", MapUtilsExt.copyNewMap(params));
+
+		// 用于js中该方法的使用beforePageInit
+		model.addAttribute(UIConst.UIPAGEMODEL, data);
+
+		return "$!{main.controllerReqPath}/${main.classname}_add.ui";
+	}
+
+	@RequestMapping(value = "showEdit.do", name = "待办、流程监控、办结库界面入口", method = { RequestMethod.POST, RequestMethod.GET })
+	public String showEdit(String billId, String action, Model model) {
+		// 1、参数校验
+		if (StringUtilsExt.isEmpty(billId)) {
+			throw new BusinessException("ASSET_CO_001", "当前操作单据有误！");
+		}
+		if (StringUtilsExt.isEmpty(action)) {
+			throw new BusinessException("ASSET_CO_001", "当前操作单据编辑状态不存在！");
+		}
+
+		// 2、获取实体
+		${main.capitalEntityName} ${main.entityName} = ${main.serviceName}
+				.get${main.capitalEntityName}ByPrimaryKey(NumberUtilsExt.toLong(billId));
+		if (SpringObjectUtilsExt.isEmpty(${main.entityName})) { // 校验
+			throw new BusinessException("ASSET_CO_001", "当前操作单据已不存在！");
+		}
+		${main.entityName}.setAuditOpin(" ");// 置空已有的审核意见
+
+		Map<String, Object> data = new HashMap<String, Object>(); // 存储前端beforePageInit方法的参数
+		Integer bizStatus = ${main.entityName}.getBizStatus();// 获取业务状态
+
+		// 3、单据编辑状态获取并且赋值
+		data.put("curEditStatus", EditStatus.getEditStatus(bizStatus, action).STATUS);
+
+		// 4、办结库数据判断是否有驳回权限并赋值
+		if ("9".equalsIgnoreCase(action)) {// 判断当前点击办结库使用单据的用户是否具有驳回权限
+			if (hasRejectOption(${main.entityName})) {// 具有驳回权限
+				data.put("hasReject", "1");
+			} else {// 不具有驳回权限
+				data.put("hasReject", "0");
+			}
+		}
+
+		// 5、待办入口调用该方法时调用工作流记录查看信息
+		if ("0".equalsIgnoreCase(action)) {
+			ActivitiParams params = getOperateParam(${main.entityName}, null);// 获取传给工作流的参数
+			${main.serviceName}.viewRecrod(params);
+		}
+
+		// 6、表单底部信息项设置
+		if (TaskStatus.BUSINESSSUCCESS.getStatus().equals(bizStatus)) {
+			// model.addAttribute("curBillStatus", 2);// 已终审
+			data.put("curBillStatus", 2);
+		} else {
+			// model.addAttribute("curBillStatus", 3);
+			data.put("curBillStatus", 3);
+			if (${main.entityName}.getBizStatus().equals(1)) {
+				data.put("curBillStatus", 4);
+			}
+		}
+
+		String[] creators = ${main.entityName}.getCreator().split(" ");
+		if (creators.length == 2) {
+			// model.addAttribute("curMaker", creators[1]);// 制单人
+			data.put("curMaker", creators[1]);// 制单人
+		} else {
+			// model.addAttribute("curMaker", "");// 制单人
+			data.put("curMaker", "");// 制单人
+		}
+
+		model.addAttribute("${main.entityName}", ${main.entityName});// 使用实体添加到modal
+
+		// 该日期将用于与使用日期校验判断
+		data.put("curDate", DateUtilsExt.getNowDate());
+		// // 7、获取对数据操作的权限（编辑或查看） 最细级判断
+		// Map<String, Object> params =
+		// WebApplicationContext.getContext().getWebRequestContext()
+		// .getRequestParamsMap();
+		// data.put("params", MapUtilsExt.copyNewMap(params));
+
+		// 8、相应信息设置到beforePageInit方法里的参数
+		data.put("${main.entityName}", ${main.entityName});
+
+		model.addAttribute(UIConst.UIPAGEMODEL, data);
+
+		// 9、返回页面信息
+		return "$!{main.controllerReqPath}/${main.classname}_add.ui";
+	}
+
+	@Operation(comment = "展示附件界面")
+	@RequestMapping(value = "showAttach.do", name = "展示附件界面")
+	public String showAttach(Model model) {
+
+		return "$!{main.controllerReqPath}/${main.classname}_attach.ui";
+	}
+
+
+	/**
+	 * 新增
+	 * 
+	 * @param ${main.entityName}
+	 *            新增信息
+	 */
+	@RequestMapping(value = "doTempSave.do", name = "暂存", method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResult doTempSave(List<${main.capitalEntityName}> formData, List<${detail.capitalEntityName}> gridData,
+			String action) {
+
+		// 1、参数信息合法性校验
+		if (SpringObjectUtilsExt.isEmpty(formData)) {
+			throw new BusinessException("AIMS_CO_301", "表头信息为null,保存失败！");
+		}
+
+		${main.capitalEntityName} ${main.entityName} = formData.get(0);
+
+		if (${main.entityName}.getBillId() == null) {
+			throw new BusinessException("AIMS_CO_301", "单据【" + ${main.entityName}.getBillCode() + "】ID为空,保存失败！");
+		}
+
+		if (StringUtilsExt.isEmpty(action)) {
+			throw new BusinessException("AIMS_CO_301", "单据【" + ${main.entityName}.getBillCode() + "】编辑状态为null，保存失败！");
+		}
+		if (!("EDIT".equalsIgnoreCase(action) || "ADD".equalsIgnoreCase(action))) {
+			throw new BusinessException("AIMS_CO_301", "单据【" + ${main.entityName}.getBillCode() + "】编辑状态无效，保存失败！");
+		}
+
+		// 2、编辑状态为EDIT的时候需与数据库信息项比对
+		if (EditStatus.EDIT.STATUS.equalsIgnoreCase(action)) {
+			compareIsExist(${main.entityName});
+		}
+
+		User user = AppContext.getAppContext().getSessionUser();
+		if (EditStatus.ADD.STATUS.equals(action)) {
+			// Long billId = IdManager.newWKID();
+			// 设置单据ID,初始业务状态，单据状态
+			// ${main.entityName}.setBillId(billId); showAdd方法里已设置
+			${main.entityName}.setBillStatus(String.valueOf(BillStatus.NORMAL.STATUS));
+			${main.entityName}.setBizStatus(BizStatus.TMP_SAVE.STATUS);
+			${main.entityName}.setBizStatusName(BizStatus.TMP_SAVE.NAME);
+			// 设置机构ID,编码，名称
+			${main.entityName}.setOrgId(user.getOrgLongId());
+			${main.entityName}.setOrgCode(user.getOrgCode());
+			${main.entityName}.setOrgName(user.getOrgName());
+			// 设置区域编码，ID，名称
+			${main.entityName}.setRgnCode(user.getRgnCode());
+			${main.entityName}.setRgnId(user.getRgnId());
+			${main.entityName}.setRgnName(user.getRgnName());
+			// 设置创建者 创建者ID，创建日期
+			${main.entityName}.setCreator(user.getUserCode() + " " + user.getUserName());
+			${main.entityName}.setCreatedate(DateUtilsExt.getNowDateTime());
+			${main.entityName}.setCreatorId(user.getUserId());
+		}
+
+		int i = 1;
+		for (${detail.capitalEntityName} ${detail.entityName} : gridData) {
+			// 设置单据ID,明细ID，明细顺序号
+			${detail.entityName}.setBillId(${main.entityName}.getBillId());
+			${detail.entityName}.setId(IdManager.newWKID());
+			${detail.entityName}.setSxh(i);
+			// 设置机构ID,编码，名称
+			${detail.entityName}.setOrgId(${main.entityName}.getOrgId());
+			${detail.entityName}.setOrgCode(${main.entityName}.getOrgCode());
+			${detail.entityName}.setOrgName(${main.entityName}.getOrgName());
+			// 设置区域编码，ID，名称
+			${detail.entityName}.setRgnCode(${main.entityName}.getRgnCode());
+			${detail.entityName}.setRgnId(${main.entityName}.getRgnId());
+			${detail.entityName}.setRgnName(${main.entityName}.getRgnName());
+
+			i++;
+		}
+		// 4、暂存的时候工作流需记录 // 获取传给工作流的参数
+		ActivitiParams params = getOperateParam(${main.entityName}, null);
+
+		${main.serviceName}.doTempSave(${main.entityName}, gridData, params);
+		// ${main.serviceName}.add${main.capitalEntityName}(${main.entityName});
+		// 7、插入业务操作日志
+		InsertBusLog(${main.entityName}, BizOperConst.TMP_SAVE, "暂存");
+		return AjaxResult.success("暂存成功！");
+	}
+
+	@Operation(comment = "保存并提交")
+	@RequestMapping(value = "doSaveCommit.do", name = "资产使用-保存并提交", method = { RequestMethod.POST })
+	@ResponseBody
+	public AjaxResult doSaveCommit(List<${main.capitalEntityName}> formData, List<${detail.capitalEntityName}> gridData,
+			String action) {
+
+		// 1、参数信息合法性校验
+		if (SpringObjectUtilsExt.isEmpty(formData)) {
+			throw new BusinessException("ASSET_CO_301", "表头信息为null,保存失败！");
+		}
+
+		${main.capitalEntityName} ${main.entityName} = formData.get(0);
+		if (${main.entityName}.getBillId() == null) {
+			throw new BusinessException("ASSET_CO_301", "单据ID为null,保存失败！");
+		}
+		if (StringUtilsExt.isEmpty(action)) {
+			throw new BusinessException("ASSET_CO_301", "单据编辑状态为null，保存失败！");
+		}
+		if (!("EDIT".equalsIgnoreCase(action) || "ADD".equalsIgnoreCase(action))) {
+			throw new BusinessException("ASSET_CO_301", "单据编辑状态无效，保存失败！");
+		}
+
+		// 2、编辑状态为EDIT的时候需与数据库信息项比对
+		if (EditStatus.EDIT.STATUS.equalsIgnoreCase(action)) {
+			compareIsExist(${main.entityName});
+		}
+
+		// 新增的时候表头信息补全
+		User user = AppContext.getAppContext().getSessionUser();
+		if (EditStatus.ADD.STATUS.equals(action)) {
+			// Long billId = IdManager.newWKID();
+			// 设置单据ID,初始业务状态，单据状态
+			// ${main.entityName}.setBillId(billId); showAdd方法里已设置
+			${main.entityName}.setBillStatus(String.valueOf(BillStatus.NORMAL.STATUS));
+			${main.entityName}.setBizStatus(BizStatus.TMP_SAVE.STATUS);
+			${main.entityName}.setBizStatusName(BizStatus.TMP_SAVE.NAME);
+			// 设置机构ID,编码，名称
+			${main.entityName}.setOrgId(user.getOrgLongId());
+			${main.entityName}.setOrgCode(user.getOrgCode());
+			${main.entityName}.setOrgName(user.getOrgName());
+			// 设置区域编码，ID，名称
+			${main.entityName}.setRgnCode(user.getRgnCode());
+			${main.entityName}.setRgnId(user.getRgnId());
+			${main.entityName}.setRgnName(user.getRgnName());
+			// 设置创建者 创建者ID，创建日期
+			${main.entityName}.setCreator(user.getUserCode() + " " + user.getUserName());
+			${main.entityName}.setCreatedate(DateUtilsExt.getNowDateTime());
+			${main.entityName}.setCreatorId(user.getUserId());
+		}
+
+		int i = 1;
+		for (${detail.capitalEntityName} ${detail.entityName} : gridData) {
+			// 设置单据ID,明细ID，明细顺序号
+			${detail.entityName}.setBillId(${main.entityName}.getBillId());
+			${detail.entityName}.setId(IdManager.newWKID());
+			${detail.entityName}.setSxh(i);
+			// 设置机构ID,编码，名称
+			${detail.entityName}.setOrgId(${main.entityName}.getOrgId());
+			${detail.entityName}.setOrgCode(${main.entityName}.getOrgCode());
+			${detail.entityName}.setOrgName(${main.entityName}.getOrgName());
+			// 设置区域编码，ID，名称
+			${detail.entityName}.setRgnCode(${main.entityName}.getRgnCode());
+			${detail.entityName}.setRgnId(${main.entityName}.getRgnId());
+			${detail.entityName}.setRgnName(${main.entityName}.getRgnName());
+
+			i++;
+		}
+
+		try {
+
+			// 单据编码设置，根据数据库配置可决定是否暂存时候生成单据编码
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBillCode())) {
+				String billCode = CodeGen.newBillCodeByAdd(BUSINESS_TYPE, ${main.entityName}.getOrgId());// 设置单据编码
+
+				if (StringUtilsExt.isNotEmpty(billCode)) {
+					${main.entityName}.setBillCode(billCode);
+				}
+			}
+			// 7、暂存
+			${main.serviceName}.doTempSave(${main.entityName}, gridData, null);
+		} catch (Exception e) {
+			throw new BusinessException("ASSET_CO_301", e.getMessage());
+		}
+		// 8、插入业务操作日志
+		InsertBusLog(${main.entityName}, BizOperConst.TMP_SAVE, "暂存");
+
+		boolean submitAudit = SysConfigHelper.saveAndCommit();//
+		// 用于判断是进行保存提交操作或者保存操作
+		if (submitAudit) {// 判断是否更新或保存操作后是否要提交
+
+			// 判断明细是否为空
+			${detail.capitalEntityName} ${detail.entityName} = new ${detail.capitalEntityName}();
+			${detail.entityName}.setBillId(${main.entityName}.getBillId());
+			List<${detail.capitalEntityName}> ${detail.entityName}List = ${detail.serviceName}
+					.get${detail.capitalEntityName}List(${detail.entityName});
+			if (SpringObjectUtilsExt.isEmpty(${detail.entityName}List)) {// 校验明细是否为空
+				return AjaxResult.success("单据【" + ${main.entityName}.getBillCode() + "】保存成功，提交失败！失败原因:明细为空");
+			}
+
+			ProcessResult processResult = null;
+			try {
+
+				Integer handle = HandleType.SUBMIT.getHandle();
+
+				ActivitiParams params = getOperateParam(${main.entityName}, handle);
+				processResult = ${main.serviceName}.doAuditOperation(${main.entityName}, params);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new BusinessException("ASSET_CO_01", e.getMessage());
+			}
+
+			if (!(ActivitiException.SUCCESS.getCode().equals(processResult.getCode()))) {
+				return AjaxResult.success(
+						"单据【" + ${main.entityName}.getBillCode() + "】保存成功，提交失败！失败原因：" + processResult.getMessage());
+			}
+			// 插入业务操作日志
+			InsertBusLog(${main.entityName}, BizOperConst.COMMIT, "提交");
+		}
+
+		return AjaxResult.success("单据【" + ${main.entityName}.getBillCode() + "】提交成功！");
+	}
+
+	@Operation(comment = "-提交")
+	@RequestMapping(value = "doCommit.do", name = "-提交", method = { RequestMethod.POST, RequestMethod.GET })
+	@ResponseBody
+	public AjaxResult doCommit(String[] ids) {
+
+		List<${main.capitalEntityName}> ${main.entityName}sList = isCanCommit(ids);
+
+		Map<String, BatchResult> result = new HashMap<String, BatchResult>();
+		List<String> errMsg = new ArrayList<String>();
+
+		int count = 0;
+		int ecount = 0;
+		for (${main.capitalEntityName} ${main.entityName} : ${main.entityName}sList) {
+			String voidMsg = "单据【" + ${main.entityName}.getBillCode() + "】:";
+
+			// 获取从表数据
+			${detail.capitalEntityName} ${detail.entityName} = new ${detail.capitalEntityName}();
+			${detail.entityName}.setBillId(${main.entityName}.getBillId());
+			List<${detail.capitalEntityName}> ${detail.entityName}List = ${detail.serviceName}
+					.get${detail.capitalEntityName}List(${detail.entityName});
+			if (!SpringObjectUtilsExt.isEmpty(${detail.entityName}List)) {// 校验明细是否为空
+
+				Integer handle = HandleType.SUBMIT.getHandle();
+				ActivitiParams params = getOperateParam(${main.entityName}, handle);
+				ProcessResult processResult = ${main.serviceName}.doAuditOperation(${main.entityName}, params);
+
+				if (ActivitiException.SUCCESS.getCode().equals(processResult.getCode())) {
+					count++;
+				} else {
+					ecount++;
+					errMsg.add(voidMsg + processResult.getMessage());
+				}
+				InsertBusLog(${main.entityName}, BizOperConst.COMMIT, "提交");// 插入业务操作日志
+			} else {// 校验卡片数量是否为空
+				ecount++;
+				errMsg.add(voidMsg + "明细为空！");
+			}
+		}
+
+		BatchResult batchResult = new BatchResult();
+		batchResult.setBusType(BUSINESS_TYPE);
+		batchResult.setBusTypeName("");
+		batchResult.setSuccessCount(count);
+		batchResult.setErrorCount(ecount);
+		batchResult.setErrorMsg(errMsg);
+		result.put(batchResult.getBusType(), batchResult);
+
+		return ResultUtils.SUCCESS("已成功提交 " + count + " 张单据," + "失败了 " + ecount + " 张单据！", result.values());
+	}
+
+	@RequestMapping(value = "doAudit.do", name = "审核操作", method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResult doAudit(String billId, String auditComment) {
+
+		// 参数合法性校验
+		if (StringUtilsExt.isEmpty(billId)) {
+			return ResultUtils.ERROR("单据ID为空，无法进行审核操作！");
+		}
+
+		// 审核意见为空，就默认为同意审核
+		if (StringUtilsExt.isEmpty(auditComment)) {
+			auditComment = "同意审核";
+		}
+
+		// 根据单据Id获取业务表头实体
+		${main.capitalEntityName} ${main.entityName} = ${main.serviceName}
+				.get${main.capitalEntityName}ByPrimaryKey(NumberUtilsExt.toLong(billId));
+		${main.entityName}.setAuditOpin(auditComment);// 设置审核意见
+		compareIsExist(${main.entityName});// 与数据库数据比对
+
+		Integer handle = HandleType.PASS.getHandle();
+		ActivitiParams params = getOperateParam(${main.entityName}, handle);
+
+		ProcessResult processResult = ${main.serviceName}.doAuditOperation(${main.entityName}, params);
+
+		if (!(ActivitiException.SUCCESS.getCode().equals(processResult.getCode()))) {
+			throw new BusinessException("ASSET_CO_01", processResult.getMessage());
+		}
+
+		return AjaxResult.success("审核操作成功！");
+
+	}
+
+	@RequestMapping(value = "doBack.do", name = "退回操作", method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResult doBack(String billId, String auditComment, String taskId) {
+
+		// 参数合法性校验
+		if (StringUtilsExt.isEmpty(billId)) {
+			return ResultUtils.ERROR("单据ID为空，无法进行审核操作！");
+		}
+
+		// 审核意见为空，就默认为同意审核
+		if (StringUtilsExt.isEmpty(auditComment)) {
+			auditComment = "退回";
+		}
+		// 根据单据Id获取业务表头实体
+		${main.capitalEntityName} ${main.entityName} = ${main.serviceName}
+				.get${main.capitalEntityName}ByPrimaryKey(NumberUtilsExt.toLong(billId));
+		${main.entityName}.setAuditOpin(auditComment);// 设置审核意见
+		compareIsExist(${main.entityName});// 与数据库数据比对
+
+		// 提交数据 走工作流
+		ActivitiParams params = null;
+
+		if ("BACK".equals(taskId)) {// 退回上一步
+			params = getOperateParam(${main.entityName}, HandleType.RETURN.getHandle());
+		} else {// 自定义退回
+			params = getOperateParam(${main.entityName}, HandleType.MOVEBACK.getHandle());
+			params.setMoveUserTaskDef(taskId);
+		}
+
+		ProcessResult processResult = ${main.serviceName}.doAuditOperation(${main.entityName}, params);
+
+		if (!(ActivitiException.SUCCESS.getCode().equals(processResult.getCode()))) {
+			throw new BusinessException("ASSET_CO_01", processResult.getMessage());
+		}
+		return AjaxResult.success("退回操作成功");
+	}
+
+	@RequestMapping(value = "doReject.do", name = "驳回操作", method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResult doReject(String billId, String auditComment, List<${detail.capitalEntityName}> ${detail.entityName}List) {
+		// @Review if 括号
+		if (StringUtilsExt.isEmpty(billId)) {
+			return ResultUtils.ERROR("单据ID为空，无法进行审核操作！");
+		}
+		// 审核意见为空，就默认为同意审核
+		if (StringUtilsExt.isEmpty(auditComment)) {
+			auditComment = "同意驳回";
+		}
+		// 根据单据Id获取业务表头实体
+		${main.capitalEntityName} ${main.entityName} = ${main.serviceName}
+				.get${main.capitalEntityName}ByPrimaryKey(NumberUtilsExt.toLong(billId));
+
+		// 判断项目计划是否已在项目进展中
+		List<Map<String, Object>> results = ${main.serviceName}.isCanReject(${main.entityName}.getBillId());
+		if (!SpringObjectUtilsExt.isEmpty(results)) {
+			StringBuffer msgBuf = new StringBuffer();
+			msgBuf.append("项目计划【" + ${main.entityName}.getBillCode() + "】中工程项目已在");
+			int i = 0, len = results.size();
+			for (Map<String, Object> map : results) {
+				if (i == 3 || (len - 1) == i) {
+					msgBuf.append(map.get("BIZ_NAME") + "【" + map.get("BILL_CODE") + "】中使用，不可驳回");
+					break;
+				}
+				msgBuf.append(map.get("BIZ_NAME") + "【" + map.get("BILL_CODE") + "】;");
+				i++;
+			}
+			throw new BusinessException("ASSET_CO_01", msgBuf.toString());
+		}
+
+		${main.entityName}.setAuditOpin(auditComment);// 设置审核意见
+		compareIsExist(${main.entityName});// 与数据库数据比对
+
+		ActivitiParams params = getOperateParam(${main.entityName}, HandleType.REJECT.getHandle());
+
+		ProcessResult processResult = ${main.serviceName}.doAuditOperation(${main.entityName}, params);
+
+		if (!(ActivitiException.SUCCESS.getCode().equals(processResult.getCode()))) {
+			throw new BusinessException("ASSET_CO_01", processResult.getMessage());
+		}
+		return AjaxResult.success("驳回操作成功!");
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：判断是否可以提交
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param ids
+	 * @return
+	 *
+	 * @date 创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	private List<${main.capitalEntityName}> isCanCommit(String[] ids) {
+		if (ids.length < 1) {
+			throw new BusinessException("ASSET_CO_301", "请选择要提交的数据！");
+		}
+
+		List<${main.capitalEntityName}> ${main.entityName}sList = new ArrayList<${main.capitalEntityName}>();
+
+		for (String billId : ids) {
+			// 单据ID为空停止当前循环，进入下一个循环
+			if (StringUtilsExt.isEmpty(billId)) {
+				continue;
+			}
+
+			// 获取业务表头实体
+			${main.capitalEntityName} ${main.entityName} = ${main.serviceName}
+					.get${main.capitalEntityName}ByPrimaryKey(NumberUtilsExt.toLong(billId));
+
+			if (SpringObjectUtilsExt.isEmpty(${main.entityName})) {
+				throw new BusinessException("ASSET_CO_001", "当前操作单据已不存在！");
+			}
+
+			if (${main.entityName}.getBizStatus() > TaskStatus.YILURU.getStatus()) {
+
+			}
+
+			// 校验业务状态是否存在
+			if (${main.entityName}.getBizStatus() == null) {
+				throw new BusinessException("ASSET_CO_301",
+						"单据【" + ${main.entityName}.getBillCode() + "】业务状态为空,无法进行提交操作！");
+			}
+			// 校验业务状态名称是否存在
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBizStatusName())) {
+				throw new BusinessException("ASSET_CO_301",
+						"单据【" + ${main.entityName}.getBillCode() + "】业务状态名称为空,无法进行提交操做！");
+			}
+
+			${main.entityName}sList.add(${main.entityName});
+		}
+
+		return ${main.entityName}sList;
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：编辑状态为EDIT的单据校验 -与数据中的信息比对
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param ${main.entityName}
+	 * @return
+	 *
+	 * @date 创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	private ${main.capitalEntityName} compareIsExist(${main.capitalEntityName} ${main.entityName}) {
+
+		Long billId = ${main.entityName}.getBillId();
+
+		if (ObjectUtils.isEmpty(${main.entityName})) {
+			throw new BusinessException("AIMS_CO_301", "当前操作单据已不存在！");
+		}
+		// 校验单据ID是否存在
+		if (billId == null) {
+			throw new BusinessException("AIMS_CO_301", "单据ID为null,保存失败！");
+		}
+
+		${main.capitalEntityName} old${main.capitalEntityName} = ${main.serviceName}.get${main.capitalEntityName}ByPrimaryKey(billId);
+		if (ObjectUtils.isEmpty(old${main.capitalEntityName})) {
+			throw new BusinessException("AIMS_CO_301", "当前操作单据已不存在！");
+		}
+
+		// 校验业务状态是否存在
+		if (old${main.capitalEntityName}.getBizStatus() == null) {
+			throw new BusinessException("AIMS_CO_301", "业务状态为null,保存失败！");
+		}
+		// 校验业务状态名称是否存在
+		if (StringUtilsExt.isEmpty(old${main.capitalEntityName}.getBizStatusName())) {
+			throw new BusinessException("AIMS_CO_301", "业务状态名称为null,保存失败！");
+		}
+
+		// 校验单据业务状态与数据库是否一致
+		if (!old${main.capitalEntityName}.getBizStatus().equals(${main.entityName}.getBizStatus())) {
+			throw new BusinessException("AIMS_CO_301", "单据业务状态与数据库不一致！");
+		}
+
+		return old${main.capitalEntityName};
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：日志记录
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param ${main.entityName}
+	 * @param bizOperConst
+	 * @param commont
+	 *
+	 * @date 创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	private void InsertBusLog(${main.capitalEntityName} ${main.entityName}, String bizOperConst, String commont) {
+		ApiBizLog bizLog = new ApiBizLog();
+		bizLog.setBizOperType(bizOperConst);
+		bizLog.setBizType(BUSINESS_TYPE);
+		bizLog.setBizTypeName("");
+		bizLog.setOperDesc(commont + "-" + BUSINESS_TYPE + "【 " + ${main.entityName}.getBillCode() + "】");
+		BizLogHelper.saveBizLog(bizLog);
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：组装传给工作流的参数
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param ${main.entityName}
+	 * @param handleNum
+	 * @return
+	 *
+	 * @date 创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	private ActivitiParams getOperateParam(${main.capitalEntityName} ${main.entityName}, Integer handleNum) {
+		User user = AppContext.getAppContext().getSessionUser();
+
+		ActivitiParams params = new ActivitiParams();
+		params.setBusinessId(${main.entityName}.getBillId());// 单据ID
+
+		params.setBusType(BUSINESS_TYPE);// 业务类型
+		params.setCreatorName(${main.entityName}.getCreator());// 创建者
+		params.setCreatorId(${main.entityName}.getCreatorId());// 创建者ID
+		params.setComment(${main.entityName}.getAuditOpin());// 赋值审核意见
+		params.setUserCode(user.getUserCode());// 用户ID
+		params.setUserName(user.getUserName());// 用户名称
+		params.setHandle(handleNum); // 设置进入工作流处理类型
+		Map<String, Object> extParams = new HashMap<String, Object>();
+
+		extParams.put("creator", StringUtilsExt.substringBefore(${main.entityName}.getCreator(), " "));
+		extParams.put("orgCode", ${main.entityName}.getOrgCode());
+		extParams.put("orgId", ${main.entityName}.getOrgId());
+		extParams.put("bizId", ${main.entityName}.getBillId());
+		params.setStartKeyMap(extParams);
+		return params;
+	}
+
+	@Operation(comment = "批量删除")
+	@RequestMapping(value = "doBatchDelete.do", name = "-批量删除", method = RequestMethod.POST)
+	@ResponseBody
+	public AjaxResult doBatchDelete(Long[] ids) {
+
+		int count = 0;
+		int ecount = 0;
+		for (Long billId : ids) {
+			${main.capitalEntityName} ${main.entityName} = ${main.serviceName}.get${main.capitalEntityName}ByPrimaryKey(billId);
+
+			String voidMsg = "单据【" + ${main.entityName}.getBillCode() + "】";
+
+			if (${main.entityName}.getBizStatus() > TaskStatus.YILURU.getStatus()) {
+				return ResultUtils.ERROR(voidMsg + "的记录不可进行删除操作！");
+			}
+
+			// 删除
+			ProcessResult result = ${main.serviceName}.doDelete(${main.entityName});
+
+			if (ActivitiException.SUCCESS.getCode().equals(result.getCode())) {
+				count++;
+			} else {
+				ecount++;
+			}
+			// 插入业务操作日志
+			InsertBusLog(${main.entityName}, BizOperConst.DELETE, "删除");
+
+		}
+
+		if (ids.length > 0) {
+			return AjaxResult.success("已成功删除了 " + count + " 张单据," + "失败了 " + ecount + " 张单据！");
+		} else {
+			return AjaxResult.success("已成功删除了单据！");
+		}
+
+	}
+
+	/**
+	 * 获取分页
+	 * 
+	 * @param searcher
+	 *            查询条件
+	 * @param page
+	 *            分页信息
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping(value = "query${main.capitalEntityName}Page.do", name = "bankBalance_index分页查询")
+	@AjaxResponseBody
+	public GridData query${main.capitalEntityName}Page(Searcher searcher, Page<${main.capitalEntityName}> page) {
+
+		searcher.addCondition("bill_status", 3, "<>");
+		return new GridData(new PageResult(${main.serviceName}.query${main.capitalEntityName}Page(searcher, page)));
+
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@RequestMapping("query${detail.capitalEntityName}sPage.do")
+	@ResponseBody
+	public GridData query${detail.capitalEntityName}sPage(String billId, Searcher searcher,
+			Page<${detail.capitalEntityName}> page) {
+
+		if (StringUtilsExt.isNoneBlank(billId)) {
+			searcher.addCondition("bill_id", billId, Operator.EQUAL.getCode());
+		}
+
+		return new GridData(
+				new PageResult(${detail.serviceName}.query${detail.capitalEntityName}Page(searcher, null)));
+	}
+
+
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：判断是否具有驳回权限
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param ${main.entityName}
+	 * @return
+	 *
+	 * @date 创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	public Boolean hasRejectOption(${main.capitalEntityName} ${main.entityName}) {
+
+		Boolean flag = false;
+
+		ActivitiParams params = getOperateParam(${main.entityName}, HandleType.REJECT.getHandle());
+		flag = activitiProcessService.hasRejectOption(params);
+
+		return flag;
+	}
+}

@@ -33,7 +33,8 @@ public class LoginController {
 	@GetMapping({ "/", "" })
 	String welcome(Model model) {
 		// return "redirect:/blog";
-		return "index";
+		//return "index";
+		return "generator/generator";
 	}
 	
 	

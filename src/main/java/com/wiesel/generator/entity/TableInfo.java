@@ -46,5 +46,5 @@ public class TableInfo {
 
 	// 类名(第一个字母大写)，如：sys_user => SysUser
 	private String capitalClassName;
-
+	
 }

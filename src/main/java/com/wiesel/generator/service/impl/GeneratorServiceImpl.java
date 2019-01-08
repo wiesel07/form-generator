@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.plugins.Page;
 import com.wiesel.common.config.properties.GeneratorProperties;
+import com.wiesel.common.exception.ApiException;
 import com.wiesel.common.utils.GenUtils;
 import com.wiesel.generator.entity.TableField;
 import com.wiesel.generator.entity.TableInfo;
@@ -45,9 +46,13 @@ public class GeneratorServiceImpl implements IGeneratorService {
 	@Autowired
 	private GeneratorMapper generatorMapper;
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Page<TableInfo> queryTablePage(Page page, String tableName, String owner) {
-		return generatorMapper.queryTablePage(page, tableName, owner);
+		List<TableInfo> tableInfos = generatorMapper.queryTablePage(page, tableName, owner);
+		int total = generatorMapper.queryTableCount(tableName, owner);
+		page.setRecords(tableInfos);
+		page.setTotal(total);
+		return page;
 	}
 
 	@Override
@@ -59,38 +64,27 @@ public class GeneratorServiceImpl implements IGeneratorService {
 
 		// 判断配置属性里是否有配置明细表属性，有判断表是否存在，获取相应明细表信息
 		String detailTableName = generatorProperties.getDetailTableName();
-		TableInfo detailTableInfo = null;
-		List<TableField> detailTableFields = null;
-		if (StrUtil.isNotBlank(detailTableName)) {
-			detailTableInfo = generatorMapper.queryTablePage(new Page<>(), detailTableName, owner).getRecords().get(0);
-			if (ObjectUtil.isNotNull(detailTableInfo)) {
-				detailTableFields = generatorMapper.queryTableFields(detailTableName, owner);
-			}
+		if (StrUtil.isEmpty(detailTableName)) {
+			throw new ApiException("策略配置中的明细表不能为空");
 		}
 
-		if (detailTableInfo != null) {
-			for (String tableName : tableNames) {
-				// 查询表字段信息
-				List<TableField> tableFields = generatorMapper.queryTableFields(tableName, owner);
+		TableInfo detailTableInfo = generatorMapper.queryTablePage(new Page<>(), detailTableName, owner)
+				.get(0);
+		if (ObjectUtil.isNull(detailTableInfo)) {
+			throw new ApiException("明细表不存在");
+		}
+		List<TableField> detailTableFields = generatorMapper.queryTableFields(detailTableName, owner);
 
-				TableInfo tableInfo = generatorMapper.queryTablePage(new Page<>(), tableName, owner).getRecords()
-						.get(0);
-				// 生成代码
-				GenUtils.generatorCode(tableInfo, tableFields, detailTableInfo, detailTableFields, zip);
-				break;
-			}
-		}else {
-			for (String tableName : tableNames) {
-				// 查询表字段信息
-				List<TableField> tableFields = generatorMapper.queryTableFields(tableName, owner);
+		for (String tableName : tableNames) {
+			// 查询表字段信息
+			List<TableField> tableFields = generatorMapper.queryTableFields(tableName, owner);
 
-				TableInfo tableInfo = generatorMapper.queryTablePage(new Page<>(), tableName, owner).getRecords().get(0);
-				// 生成代码
-				GenUtils.generatorCode(tableInfo, tableFields, zip);
-			}
+			TableInfo tableInfo = generatorMapper.queryTablePage(new Page<>(), tableName, owner).get(0);
+			// 生成代码
+			GenUtils.generatorCode(tableInfo, tableFields, detailTableInfo, detailTableFields, zip);
+			break;
 		}
 
-		
 		IOUtils.closeQuietly(zip);
 		return outputStream.toByteArray();
 	}

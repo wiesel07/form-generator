@@ -46,9 +46,27 @@ public interface GeneratorMapper {
 	 * @author 作者：wuj
 	 */
 	@SuppressWarnings("rawtypes")
-	Page<TableInfo> queryTablePage(@Param("page")Page page,@Param("tableName")String tableName,@Param("owner")String owner);
-
+	List<TableInfo> queryTablePage(@Param("page")Page page,@Param("tableName")String tableName,@Param("owner")String owner);
+	
+	
 	/**
+	 * 
+	 * <p>函数名称：        </p>
+	 * <p>功能说明：根据条件统计表数量
+	 *
+	 * </p>
+	 *<p>参数说明：</p>
+	 * @param tableName
+	 * @param owner
+	 * @return
+	 *
+	 * @date   创建时间：2019年1月1日
+	 * @author 作者：wujian
+	 */
+    int queryTableCount(@Param("tableName")String tableName,@Param("owner")String owner);
+
+    
+    /**
 	 * 
 	 * <p>函数名称：        </p>
 	 * <p>功能说明：根据表名、用户获取表的字段信息
@@ -64,5 +82,6 @@ public interface GeneratorMapper {
 	 */
 	List<TableField> queryTableFields(@Param("tableName")String tableName,@Param("owner")String owner);
 	
+
 
 }

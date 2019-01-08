@@ -30,10 +30,15 @@ public class ${main.capitalEntityName} implements java.io.Serializable {
  
 	
 	#foreach ($tableField in $main.tableFields)
-	#if($tableField.comments!='' && $tableField.comments!="null" )
+	#if($tableField.comments!='null'&& $tableField.comments!=''  )
     
     /**
 	 * $tableField.comments
+	 */
+	#else
+	 
+	/**
+	 *
 	 */
     #end
     #if($tableField.columnName == "BILL_ID")

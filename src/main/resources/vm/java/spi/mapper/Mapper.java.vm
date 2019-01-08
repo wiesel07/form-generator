@@ -1,0 +1,87 @@
+package ${main.packageName}.mapper;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import ${main.packageName}.entity.${main.capitalEntityName};
+import com.bosssoft.platform.common.lang.data.Page;
+import com.bosssoft.platform.common.lang.data.Searcher;
+import com.bosssoft.platform.persistence.common.Mapper;
+import com.bosssoft.platform.runtime.exception.BusinessException;
+
+/**
+ *
+ * @ClassName 类名：${main.capitalMapperName}
+ * @Description 功能说明： ${main.comments}接口类
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+public interface ${main.capitalMapperName} extends Mapper<${main.capitalEntityName}>{
+
+	/**
+	 * 
+	 * <p>函数名称：        </p>
+	 * <p>功能说明：
+	 *
+	 * </p>
+	 *<p>参数说明：</p>
+	 * @param searcher
+	 * @param page
+	 * @return
+	 *
+     * @date   创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	Page<${main.capitalEntityName}> query${main.capitalEntityName}Page(@Param("searcher")Searcher searcher,@Param("page")Page<${main.capitalEntityName}> page);
+	
+	
+	/**
+	 * 
+	 * <p>
+	 * 函数名称：
+	 * </p>
+	 * <p>
+	 * 功能说明：根据ID删除${main.comments}
+	 *
+	 * </p>
+	 * <p>
+	 * 参数说明：
+	 * </p>
+	 * 
+	 * @param billId
+	 * @return
+	 *
+	 * @date   创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	int deleteByBillId(@Param("billId") Long billId);
+
+	/**
+	 * 
+	 * <p>函数名称：        </p>
+	 * <p>功能说明：判断${main.comments}是否可以驳回
+	 *
+	 * </p>
+	 *<p>参数说明：</p>
+	 * @param id
+	 * @return
+	 *
+	 * @date   创建时间：${createDate}
+	 * @author 作者：${author}
+	 */
+	List<Map<String, Object>> isCanReject(@Param("id") Long id);
+}
