@@ -1,0 +1,368 @@
+/**
+ *  ${author} ${createDate}
+ */
+//define(['引入外部js模块或控件'],function('引入外部js或控件的别名'){})
+define(
+		[ 
+		  "app/widgets/window/app-dialog",
+		  "app/app-pagebase","$!{main.xmlJsPath}/${main.classname}_add.js",
+		  "resources/egov/js/common/utils/StatusUtils",
+		  "resources/egov/js/asset/todo/activitinextuser/audit_check.js"],
+		function(Dialog,PageBase,dlg,$status,$checkdlg) {
+		   var ${main.capitalEntityName}Model = PageBase.extend({
+			        BEFORE_DATA:null, 
+			        //类初始化
+		            initialize : function() {
+						${main.capitalEntityName}Model.superclass.initialize.call(this);
+					},
+					//控件监听事件  格式：#控件id#:{事件名:事件方法}
+					listeners:{
+						${main.entityName}Page_grid:{
+							 onClickCell:function(rowData,rowIndex,field){
+			                	 var _self = ${main.capitalEntityName}Model.getInstance();
+								if(field == 'billCode'){
+					                    var bizStatus = rowData.bizStatus;
+					                    var editstatus =_self.BEFORE_DATA.params.editstatus;
+			                        
+					                    if($.isMgrOrg()||editstatus === '0'){	//只有查看权限单位判断   
+					                    	_self.showViewPage(rowData);
+					                    	return;
+					                    }
+					                    //7驳回 9 退回
+					                    if(bizStatus==1 || bizStatus ==7|| bizStatus == 9 ||bizStatus ==10 ){
+					                    	  dlg.showPage({toDoStatus:dlg.ACTION.EDIT, billId:rowData.billId},function(){
+													 ${main.capitalEntityName}Model.getInstance().refreshData();
+												})
+					                    	   return;
+					                    }
+					                    _self.showViewPage(rowData);
+								}
+							}
+						},
+						//查询框  业务状态选择后事件
+			        	bizStatusName:{
+							onChange:function(newVal,oldVal){
+								
+								if(newVal == '1008'){
+			            			$A('#bizStatusName1').textbox('setValue',10);
+			            			$A('#bizStatusName2').textbox('setValue',999999);
+			            			$A('#bizStatusName').textbox('setValue','');
+			            			$A('#bizStatusName').textbox('setText','审核');
+			            		} else {
+			            			$A('#bizStatusName1').textbox('setValue','');
+			            			$A('#bizStatusName2').textbox('setValue','');
+			            		}
+							
+								$A("#${main.entityName}Page_query").xquery("quickQuery");
+							}
+						},
+					    /**
+					     * 新增按钮事件
+					     */
+						${main.entityName}Page_btnAdd:{
+							click: function(){
+								dlg.showPage({toDoStatus:dlg.ACTION.ADD},function(){
+									 ${main.capitalEntityName}Model.getInstance().refreshData();
+								})
+							}
+						},
+						/**
+						 * 高级查询按钮事件
+						 */
+						${main.entityName}Page_btnQuery:{
+							click:function(){
+								$("#${main.entityName}Page_query").xquery("openQuery");
+								$("div[id*='advquery'] div.dialog-content").css("height","150px")
+							}
+						},	
+						
+				      /**
+				       * 修改按钮事件
+				       */
+						${main.entityName}Page_btnEdit: {
+			                click: function () {
+			                    var _self = ${main.capitalEntityName}Model.getInstance();
+			                    var rows = $("#${main.entityName}Page_grid").grid("getSelections");
+			                    if (rows == null || rows.length <= 0) {
+			                        $A.assetMsg.warn("请选择要修改的单据！");
+			                        return;
+			                    } else if (rows.length > 1) {
+			                    	$A.assetMsg.warn("修改单据不能选中多条数据！");
+			                        return;
+			                    } else {
+			                    	var rowData = rows[0];
+			                    	var bizStatus = rowData.bizStatus;
+			                        if(bizStatus==1 || bizStatus == 9 ||bizStatus ==10){
+			                        	  dlg.showPage({toDoStatus:dlg.ACTION.EDIT, billId:rowData.billId}, function () {
+			                        		  ${main.capitalEntityName}Model.getInstance().refreshData();
+			                                });
+			                        	   return;
+			                        }
+			                        _self.showViewPage(rowData);
+			                    }
+			                }
+			            },
+			            /**
+			             * 查看按钮事件
+			             */
+			            ${main.entityName}Page_btnView:{
+			            	click:function(){
+			            		var _self =${main.capitalEntityName}Model.getInstance();
+			            		   var rows = $("#${main.entityName}Page_grid").grid("getSelections");
+			            		   if (rows == null || rows.length <= 0) {
+			                           $A.assetMsg.warn("请选择要查看的单据！");
+			                           return;
+			                       } else if (rows.length > 1) {
+			                       	   $A.assetMsg.warn("查看单据不能选中多条数据！");
+			                           return;
+			                       } else {
+			                    	   var rowData = rows[0];
+			                    	   _self.showViewPage(rowData);
+			                       }
+			            	}
+			            },
+			            /**
+			             * 提交按钮事件
+			             */
+			            ${main.entityName}Page_btnCommit:{
+			                click:function(){
+			                	${main.capitalEntityName}Model.getInstance().doCommit();//提交
+			                }
+			            },
+			          
+			            /**
+			             * 删除按钮事件
+			             */
+			            ${main.entityName}Page_btnDel: {
+			                click: function () {
+			                	${main.capitalEntityName}Model.getInstance().doBatchDeleteData();
+			                }
+			            },
+			            /**
+			             * 打印单据按钮事件
+			             */
+			            ${main.entityName}Page_btnPrintBill: {
+			                click: function () {
+			                	${main.capitalEntityName}Model.getInstance().printUseBill();
+			                }
+			            },
+			          /**
+			           * 流程帮助按钮
+			           */
+			            ${main.entityName}Page_flowHelpbtn:{
+							click:function(){
+							    $.flowHelp("${main.businessType}");
+							}
+						},
+				
+						/**
+						 * 流转状态按钮：
+						 */
+						${main.entityName}Page_btnFlow:{
+							click:function(){
+								var busType = "${main.businessType}_AUDIT";
+								var rows = $A("#${main.entityName}Page_grid").grid("getSelections");
+								if(rows == null || rows.length == 0){
+									$A.assetMsg.warn("请选择一条单据!");
+								}else if(rows.length > 1){
+									$A.assetMsg.warn("只能选择一条单据!");
+								}else{
+									var billId = rows[0].billId;
+									var params = {"auditType":busType,"busType":busType,"businessId":billId,"data":rows[0]};
+									$.flowSearch(params);
+								}	
+							}
+						},
+						  /**
+			             * 导入按钮事件
+			             */
+			            ${main.entityName}Page_btnExport:{
+			            	click:function(){
+			            		
+			            	}
+			            },
+						
+			            /**
+			             * 导出按钮事件
+			             */
+			            ${main.entityName}Page_btnOutPorting: {
+			                click: function () {
+
+			                }
+			            }
+					},
+					
+				   //格式化期间
+					formatterBillPeriod:function(val,row){
+						 if(val==null || val==undefined || val== "null"){
+						        return "";
+						  }
+						   
+					    if (val.length == 6) {
+					        return val.substring(0,4)+"-"+val.substring(4,6);
+					    }
+					},
+					//页面加载后初始化
+					initPage:function(data){
+						var _self = ${main.capitalEntityName}Model.getInstance();
+						var $grid = $A("#${main.entityName}Page_grid").data("grid");
+			        	$grid.$header.find('.grid-header-title>span').html("单据<span class='grid_tips'>" +
+			        			"&nbsp;&nbsp;注：单击单据编号信息项可查看详情</span>");
+						$A("#${main.entityName}Page_query").xquery("toggle");
+						//网格不自动读取数据第一次手动获取
+				    	$A("#${main.entityName}Page_query").xquery("quickQuery");
+							
+				    	  _self.BEFORE_DATA = data;
+				    	  _self.doOff(data);
+					},
+					
+					doOff:function(data){
+			        	var flag =$.isMgrOrg();
+				    	//只有查看权限单位判断   
+						var editstatus = data.params.editstatus;//$A('#editstatus').val();
+						var editType = data.params.editType;
+			        	if($.isMgrOrg()||editstatus === '0'){
+			        		$A("#${main.entityName}Page_btnAdd").hide();
+			         		$A("#${main.entityName}Page_btnEdit").hide();
+			         		$A("#${main.entityName}Page_btnDel").hide();
+			         		$A("#${main.entityName}Page_btnCommit").hide();
+			        	}
+			        },
+					
+				      //格式化网格业务状态
+			        formatterBizStatus:function(val,rowVal){
+						return $status.formatterBizStatus(rowVal.bizStatus);
+					},
+					//显示查看业
+					showViewPage:function(data){
+						 dlg.showPage({toDoStatus:dlg.ACTION.VIEW, billId:data.billId}, function () {
+                    	    
+                      });
+					},
+					refreshData:function(){
+						$("#${main.entityName}Page_grid").grid("reload");
+					},
+					//显示编辑业
+					showEditPage:function(data,e){
+						 var _self=this;
+						dlg.showPage(dlg.ACTION.EDIT,data,function(){
+						     _self.refreshData();
+						});
+					},
+					
+					   //批量删除操作
+			        doBatchDeleteData: function () {
+			            var _self = this;
+			            var rows = $("#${main.entityName}Page_grid").grid("getSelections");
+			 
+			            if (rows == null || rows.length <= 0) {
+			            	 $A.assetMsg.warn("请选择要删除的单据！");
+			                return;
+			            } else {
+			                for (var i = 0; i < rows.length; i++) {
+			                	if(rows[i].bizStatus > 10){
+				               		 $A.assetMsg.warn("单据【"+rows[i].billCode+"】不可进行删除！");
+				               	    return;
+			                 	}
+			                }
+				   	      $A.assetMsg.confirm("确认删除所选单据吗？", {
+			                    ok: function () {
+			                    	$A.showWaitScreen();//显示等待画面
+			                        var url = "$!{main.controllerReqPath}/doBatchDelete.do";
+			                        var ids = [];
+			        				for (var i = 0; i < rows.length; i++) {
+			        					ids[i] = rows[i].billId;
+			        				}
+			                        $app.ajax.ajaxCall({
+			                            url: url,
+			                            data: {
+			                            	ids:ids,
+			                            },
+			                            callback: function (json) {
+			                            	
+			                                //删除后返回相应结果信息
+			                                $A.assetMsg.success(json);
+			                            	
+			                                _self.refreshData();
+			                                
+			                                var rows = $('#${main.entityName}Page_grid').grid('getRows');
+			                                //删除后网格没有数据，界面内容重新初始化
+			                                if (rows == null) {
+			                                    $A("#${main.entityName}Page_grid").grid("setParameter", null);
+			                                    $A("#${main.entityName}Page_grid").grid("reload");
+			                                }
+			                            },
+			                            complete:function(){
+			        	                	$A.hideWaitScreen();//隐藏等待画面	
+			        	                }
+			                        });
+			                    }
+			                });
+			            }
+			        },
+			 
+			        //提交
+			        doCommit:function(){
+			        	var _self = ${main.capitalEntityName}Model.getInstance();
+			            var rows = $("#${main.entityName}Page_grid").grid("getSelections");
+			            if (rows == null || rows.length <= 0) {
+			            	$A.assetMsg.warn("请选择要提交的单据！");
+			                return;
+			             }else {        
+			                 $A.assetMsg.confirm("确定提交吗？",{
+									ok:function(){
+										$A.showWaitScreen();//显示等待画面
+										var url =  "$!{main.controllerReqPath}/doCommit.do";
+										var ids = [];
+										for (var i = 0; i < rows.length; i++) {
+											ids[i] = rows[i].billId;
+										}
+										$app.ajax.ajaxCall({
+											url : url,
+											data : {
+												ids:ids
+											},
+											success : function(data) {													
+												${main.capitalEntityName}Model.getInstance().refreshData();
+												$checkdlg.showBatchPage($checkdlg.ACTION.VIEW,data,function(){
+													
+												});
+						                     	 //$A.assetMsg.success(json);	
+											},
+											error:function(json){
+			           	     	        	   var index = json.causeBy.indexOf('d');
+			           	     	        	    $A.assetMsg.warn(json.causeBy.substring(index+2));
+			           	     	           },
+											 complete:function(){
+								                	$A.hideWaitScreen();//隐藏等待画面	
+								                }
+										});
+									}
+								});
+			             }
+			        },	
+					
+					//控件属性重置
+					initUIExtConfig : function() {
+					    var _self=this;
+						this.uiExtConfig={
+							//格式 #控件id#:function(控件属性集类){ config.setAttr("控件属性名","属性值"),// 网格，下拉网格，特殊设置config.getColumn("网列id").setAttr("列属性名","列属性值")config.getButton("网格内包含的按钮id").setAttr("handler","点击事件")  }
+							${main.entityName}Page_grid:function(config){
+								config.getButton("${main.entityName}Page_grid_btnEdit").setAttr("handler",_self.showEditPage);
+								config.getButton("${main.entityName}Page_grid_btnView").setAttr("handler",_self.showViewPage);
+								config.getButton("${main.entityName}Page_grid_btnDel").setAttr("handler",_self.doDeleteData);
+							}
+						
+						}
+					}
+
+		 });
+		 ${main.capitalEntityName}Model.getInstance=function(){
+		     if (!this.instance){
+		    	 this.instance =new ${main.capitalEntityName}Model();
+		     }
+		     return this.instance;
+		 }
+		
+		 return  ${main.capitalEntityName}Model.getInstance();
+	   })

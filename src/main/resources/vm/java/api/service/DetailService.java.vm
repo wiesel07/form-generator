@@ -1,0 +1,52 @@
+package ${detail.packageName}.service;
+
+import java.util.List;
+import java.util.Map;
+
+import ${detail.packageName}.entity.${detail.capitalEntityName};
+import ${detail.packageName}.entity.${detail.capitalEntityName};
+import com.bosssoft.egov.asset.activiti.entity.ActivitiParams;
+import com.bosssoft.egov.asset.activiti.entity.ProcessResult;
+import com.bosssoft.platform.common.lang.data.Page;
+import com.bosssoft.platform.common.lang.data.Searcher;
+
+/**
+ *
+ * @ClassName 类名：${detail.capitalServiceName}
+ * @Description 功能说明： ${detail.comments}接口类
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+public interface ${detail.capitalServiceName} {
+
+	
+	/**
+	 * 获取${detail.comments}分页.
+	 * 
+	 */ 
+	Page<${detail.capitalEntityName}> query${detail.capitalEntityName}Page(Searcher searcher, Page<${detail.capitalEntityName}> page);
+
+
+     /**
+	 * 获取${detail.comments}列表.
+	 * 
+	 */ 
+	List<${detail.capitalEntityName}> getAssetCoProjectPlanDetailList(
+			${detail.capitalEntityName} ${detail.entityName});
+
+
+}
+ 
+ 

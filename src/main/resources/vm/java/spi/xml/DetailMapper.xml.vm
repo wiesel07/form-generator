@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${packageName}.mapper.${capitalMapperName}">
+
+    <resultMap id="${detail.mapperName}Map" type="${packageName}.mapper.${detail.capitalMapperName}" >
+         #foreach ($tableField in $detail.tableFields)
+             <result property="$tableField.propertyName" column="$tableField.columnName" />
+         #end
+	 </resultMap>
+
+   <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+    #foreach ($tableField in $detail.tableFields)
+    $tableField.columnName#if($foreach.hasNext),#end   
+    #end
+    </sql>
+    
+    
+    <select id="query${detail.capitalEntityName}Page" resultMap="${detail.mapperName}Map">
+    	SELECT     
+    	<include refid="Base_Column_List" />
+        FROM ${detail.tableName}
+      	 <trim prefix="where"  prefixOverrides="and |or">  
+	        <if test="searcher != null and searcher.__QUERYCON != null">  
+	            ${searcher.__QUERYCON}
+	        </if>  
+	    </trim>
+    </select>
+    
+       <delete id="deleteDetailsByBillId" parameterType="java.lang.Long">
+		DELETE FROM
+		${detail.tableName} WHERE
+		BILL_ID=#{billId}
+	</delete>
+
+</mapper>

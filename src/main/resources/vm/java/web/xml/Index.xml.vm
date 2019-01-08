@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Page id="${main.entityName}Page" layout="border"
+	templatePath="$!{main.templatePath}/${main.classname}_index.jsp"
+	js="$!{main.xmlJsPath}/${main.classname}_index.js"
+	jsId="${main.classname}_index" xmlns="http://www.bosssoft.org"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.bosssoft.org ../../../../../schema/uis/uitemplate-2.0.xsd">
+	<items>
+		
+		<Panel id="${main.entityName}Page_panel_top" region="north"  height="40">
+			<items>
+			   <ToolBar id="mybtnarea_${main.entityName}Page_index" displayType="MENU" >
+			      <items>
+                    <XQueryBox id="xqueryBox" toolbarAlign="RIGHT"  queryId="${main.entityName}Page_query"
+							queryTarget="${main.entityName}Page_grid" tips="请输入关键字查询" width="220"
+							data="[	
+								{field:'BILL_CODE',name:'单据编号'},
+							    
+							    {field:'ORG_NAME',name:'单位名称'},
+							
+							    {field:'BILL_DATE',name:'登记日期'}
+							  
+								]"></XQueryBox>			
+					<Button id="${main.entityName}Page_btnAdd" name="新建"   icon="btn-add"  iconMode="LEFT"  />
+					<Button id="${main.entityName}Page_btnEdit" name="修改" icon="btn-edit" iconMode="LEFT"/>
+					<!-- <Button id="${main.entityName}Page_btnCommit" name="提交" icon="btn-commit"  iconMode="LEFT" /> -->
+					<Button id="${main.entityName}Page_btnView" name="查看" icon="btn-detail" iconMode="LEFT"/>
+					<Button id="${main.entityName}Page_btnDel" name="删除" icon="btn-delete" iconMode="LEFT"/>
+					<!-- <Button id="${main.entityName}Page_btnCancelCommit" name="作废" icon="btn-cancel-commit"  iconMode="LEFT" /> -->
+					<!-- <Button id="${main.entityName}Page_btnExport" name="导出" icon="outporting" iconMode="LEFT"/> -->
+				    <Button id="${main.entityName}Page_btnPrintBill" name="打印" icon="btn-print" iconMode="LEFT"/>
+				    <Button id="${main.entityName}Page_btnFlow" name="流程状态" icon="btn-flow-state" iconMode="LEFT"/>
+				    <Button id="${main.entityName}Page_flowHelpbtn" name="流程帮助" icon="btn-process-help" iconMode="LEFT"/>
+				    <Button id="${main.entityName}Page_btnQuery" name="高级查询" icon="btn-search"  iconMode="LEFT" toolbarAlign="RIGHT" />		
+				    </items>
+				 </ToolBar>			
+			   	 <Query id="${main.entityName}Page_query" queryTarget="${main.entityName}Page_grid"  isAdvance="true"  manual="false"  advColCount="2" operator="like" style="display:none;" showMoreButton="false"  advDlgHeight="380">
+					<quicks>
+
+						<QueryItem id="bizStatusName" width="120px" field="BIZ_STATUS" name="业务状态" editorType="COMBOBOX"  operator="=" 
+							editOptions="{
+						    	action:'egov/asset/aims/dicthelper/getDictItemByCode.do?dictCode=AIMS_BILL_BIZ_STATUS',
+						      	async:true,
+						      	valuefield:'itemCode',
+						      	textfield:'itemName',
+						      	idfield:'itemId',
+						      	pidfield:'itemPid',
+						      	onlySelect:true,
+						      	clearbtn:true,
+						      	panelwidth:133,
+						      	panelheight:150}" />
+						  
+		      	 	   <QueryItem id="bizStatusName1" field="BIZ_STATUS" editorType="TEXTBOX" visible="false" operator="&gt;"></QueryItem>
+				       <QueryItem id="bizStatusName2" field="BIZ_STATUS" editorType="TEXTBOX" visible="false" operator="&lt;"></QueryItem>					
+		      	 						
+					
+						<QueryItem id="billCode" width="120px"  field="BILL_CODE" name="单据编号" editorType="TEXTBOX" editOptions="{clearbtn:true}" operator="like" />
+				
+						<QueryItem id="billDate" width="150px" field="BILL_DATE"  editorType="DATETIME" editOptions="{clearbtn:true}" name="登记日期" operator="=" />
+					</quicks>
+					<advances>
+					    <QueryItem id="orgName"  field="ORG_NAME" name="单位名称" editorType="COMBOZTREE" 
+							editOptions="{clearbtn:'true', action: 'egov/asset/aims/basic/aimsbasicorg/loadEnableOrgTree.do',
+							async:'true',valuefield: 'orgName',idfield:'orgId',panelwidth:180,	pidfield:'orgPid',onlyleaf:'true'}" 
+							suggest="egov/asset/aims/dicthelper/queryOrg.do" comboFieldText="orgName"  operator="like"/>
+						
+						<QueryItem id="billCode"  field="BILL_CODE" name="单据编号" editorType="TEXTBOX" editOptions="{clearbtn:true}" operator="like"  />
+						<QueryItem id="billDate" field="BILL_DATE"  editorType="DATETIME" editOptions="{clearbtn:true}" name="登记日期" operator="="   />
+					</advances>
+				</Query>
+			</items>
+		</Panel>
+		
+		<Panel id="${main.entityName}Page_panel_bottom" region="center">
+			<items>
+				 <XGrid id="${main.entityName}Page_grid"
+					url="$!{main.controllerReqPath}/query${main.capitalEntityName}Page.do"
+					sort="true"  checkbox="true"  fit="true"
+					rownumbers="normal" autoLoad="false" title="${main.comments}列表">		
+					<columns>	
+					
+					   #foreach ($tableField in $main.tableFields)
+					   
+					   #if( $tableField.propertyName =='billCode' )
+						<XGridColumn field="$tableField.propertyName" title="$!tableField.comments" align="left" sortable="true"  showTitle="true" width="120"   formatter="$.formatGridClickCol" />
+						#elseif( $tableField.propertyName == 'bizStatusName' )
+						<XGridColumn field="$tableField.propertyName" title="$!tableField.comments" align="center" sortable="true"  showTitle="true" width="80"
+						 formatter="${main.classname}_index.formatterBizStatus" />
+						#else
+					    <XGridColumn field="$tableField.propertyName" title="$!tableField.comments" sortable="true"  showTitle="true" align="center" width="100"  />
+						#end
+					</columns>
+					<frozenColumnsRight>
+					</frozenColumnsRight>
+				</XGrid>
+			</items>
+		</Panel>
+	</items>
+</Page>

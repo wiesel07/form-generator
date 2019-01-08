@@ -1,0 +1,88 @@
+package ${detail.packageName}.service;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ${detail.packageName}.entity.${detail.capitalEntityName};
+import ${detail.packageName}.mapper.${detail.capitalMapperName};
+import com.bosssoft.platform.common.lang.data.Page;
+import com.bosssoft.platform.common.lang.data.Searcher;
+
+/**
+ *
+ * @ClassName 类名：${detail.capitalServiceImplName}
+ * @Description 功能说明： ${detail.comments}接口类
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+ 
+@Service
+public class ${detail.capitalServiceImplName} implements ${detail.capitalServiceName} {
+ 
+    private static Logger logger = LoggerFactory.getLogger(${detail.capitalServiceImplName}.class);
+
+	// TODO 添加需要的Mapper
+    @Autowired
+	private ${detail.capitalMapperName} ${detail.mapperName};
+	
+	/**
+	 *
+	 * @param ${detail.entityName}
+	 */
+	public void add${detail.capitalEntityName}(${detail.capitalEntityName} ${detail.entityName})  {
+		${detail.mapperName}.insert(${detail.entityName});
+	}
+
+	/**
+	 *
+	 * @param ${detail.entityName}
+	 */
+	public void del${detail.capitalEntityName}(${detail.capitalEntityName} ${detail.entityName})  {
+		${detail.mapperName}.deleteByPrimaryKey(${detail.entityName});
+	}
+
+	/**
+	 *
+	 * @param ${detail.entityName}
+	 */
+	public void update${detail.capitalEntityName}(${detail.capitalEntityName} ${detail.entityName})  {
+		${detail.mapperName}.updateByPrimaryKey(${detail.entityName});
+	}
+
+	/**
+	 *
+	 * @param ${detail.entityName}
+	 * @retrun
+	 */
+	public List<${detail.capitalEntityName}> get${detail.capitalEntityName}List(${detail.capitalEntityName} ${detail.entityName})  {
+		return ${detail.mapperName}.select(${detail.entityName});
+	}
+
+	/**
+	 *
+	 * @param searcher
+	 * @param page
+	 * @retrun
+	 */
+	public Page<${detail.capitalEntityName}> query${detail.capitalEntityName}Page(Searcher searcher, Page<${detail.capitalEntityName}> page)  {
+		return ${detail.mapperName}.query${detail.capitalEntityName}Page(searcher, page);
+	}
+}
+ 
+ 

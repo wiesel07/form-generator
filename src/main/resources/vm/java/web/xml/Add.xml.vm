@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Page id="${main.entityName}Page" layout="border"
+	templatePath="$!{main.templatePath}/${main.classname}_add.jsp"
+	js="$!{main.xmlJsPath}/${main.classname}_add.js"
+	jsId="${main.classname}_add" xmlns="http://www.bosssoft.org"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.bosssoft.org ../../../../../schema/uis/uitemplate-2.0.xsd">
+	<items>
+
+		<Panel id="${main.entityName}AddPage_panel_out" region="center"
+			layout="border" style="">
+			<items>
+				<Panel id="${main.entityName}AddPage_panel_north" region="north"
+					style="height:140px;">
+					<items>
+						<Form id="${main.entityName}Page_form" colCount="2"  layout="table"
+					name="" modelKey="${main.entityName}">
+                        #foreach ($tableField in $main.tableFields)
+					     
+					         <FormItem id="$tableField.propertyName" name="$!tableField.comments" editorType="TEXTBOX"  required="true"/>
+						#end
+
+						</Form>
+					</items>
+				</Panel>
+
+				<Panel id="${main.entityName}AddPage_panel_center" region="center"
+					style="padding:0px 0px 10px 0px">
+					<items>
+						<XGrid id="${detail.entityName}Page_grid"
+							url="$!{main.controllerReqPath/query${main.capitalEntityName}Page.do"
+							autoLoad="false" fit="true" checkbox="true" sort="true"
+							summaryPos="top" rownumbers="normal" fitColumns="E" title="明细"
+							editable="true" pager="none" summary="top">
+							<toolbar>
+								<Button id="${detail.entityName}Page_selectBtn" name="选择明细"
+									icon="btn-add" iconMode="LEFT" />
+								<Button id="${detail.entityName}Page_delBtn" name="删除"
+									icon="btn-delete " iconMode="LEFT" />
+							</toolbar>
+							<columns>
+							     
+							#foreach ($tableField in $detail.tableFields)
+					   
+							    <XGridColumn field="$tableField.propertyName" title="$!tableField.comments" sortable="true"  showTitle="true" align="center" width="100"  />
+							#end
+							</columns>
+						</XGrid>
+					</items>
+				</Panel>
+			</items>
+		</Panel>
+	</items>
+</Page>

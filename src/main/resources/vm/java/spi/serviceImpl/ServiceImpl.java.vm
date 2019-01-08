@@ -1,0 +1,245 @@
+package ${main.packageName}.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ${main.packageName}.entity.${main.capitalEntityName};   
+import ${main.packageName}.entity.${detail.capitalEntityName};
+import ${main.packageName}.mapper.${main.capitalMapperName};
+import ${main.packageName}.mapper.${detail.capitalMapperName};
+
+import com.bosssoft.egov.asset.activiti.entity.ActivitiException;
+import com.bosssoft.egov.asset.activiti.entity.ActivitiParams;
+import com.bosssoft.egov.asset.activiti.entity.ProcessResult;
+import com.bosssoft.egov.asset.activiti.entity.TaskStatus;
+import com.bosssoft.egov.asset.activiti.service.ActivitiProcessService;
+import com.bosssoft.egov.asset.codegen.service.ApiCodegenConfigService;
+import com.bosssoft.egov.asset.common.util.DateUtilsExt;
+import com.bosssoft.egov.asset.common.util.SpringObjectUtilsExt;
+import com.bosssoft.egov.asset.common.util.StringUtilsExt;
+import com.bosssoft.egov.asset.todo.service.AssetTodoTaskService;
+import com.bosssoft.platform.common.lang.data.Page;
+import com.bosssoft.platform.common.lang.data.Searcher;
+import com.bosssoft.platform.runtime.exception.BusinessException;
+
+/**
+ *
+ * @ClassName 类名：${main.capitalServiceImplName}
+ * @Description 功能说明： ${main.comments}接口类
+ *              <p>
+ *              TODO
+ *              </p>
+ ***********************************************************************
+ * @date 创建日期：${createDate}
+ * @author 创建人：${author}
+ * @version 版本号：V1.0
+ *          <p>
+ ****************************修订记录************************************
+ * 
+ *          ${createDate} ${author} 创建该类功能。
+ *
+ ***********************************************************************
+ *          </p>
+ */ 
+@Service
+public class ${main.capitalServiceImplName} implements ${main.capitalServiceName} { 
+
+    private static Logger logger = LoggerFactory.getLogger(${main.capitalServiceImplName}.class);
+
+    private final static String BUSINESS_TYPE="BUSINESS_TYPE"; 
+
+	// TODO 添加需要的Mapper
+	@Autowired
+	private ${main.capitalMapperName} ${main.mapperName};
+
+	@Autowired
+	private ${detail.capitalMapperName} ${detail.mapperName};
+
+	@Autowired
+	private ActivitiProcessService activitiProcessService;
+
+	@Autowired
+	private AssetTodoTaskService assetTodoTaskService;
+
+	@Autowired
+	private ApiCodegenConfigService apiCodegenService;
+
+	
+	public Page<${main.capitalEntityName}> query${main.capitalEntityName}Page(Searcher searcher, Page<${main.capitalEntityName}> page) {
+		return ${main.mapperName}.query${main.capitalEntityName}Page(searcher, page);
+	}
+
+	@Override
+	public void doTempSave(${main.capitalEntityName} ${main.entityName},
+			List<${detail.capitalEntityName}> ${detail.capitalEntityName}List, ActivitiParams params) {
+
+		// 暂存的时候调用该方法
+		if (!SpringObjectUtilsExt.isEmpty(params)) {
+			activitiProcessService.tempSave(params);// 暂存的时候工作流记录
+			// 改用服务的形式 生成编码 控制在一个事务中
+			String billCode = getBillCode(${main.entityName}, true);
+			if (StringUtilsExt.isNotEmpty(billCode)) {
+				${main.entityName}.setBillCode(billCode);
+			}
+		} else {// 提交的时候设置单据编码
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBillCode())) {// 未设置单据编码的单据设置单据编码
+				// 改用服务的形式 生成编码 控制在一个事务中
+				String billCode = getBillCode(${main.entityName}, false);
+				${main.entityName}.setBillCode(billCode);
+			}
+		}
+
+		// 删除明细
+		${detail.mapperName}.deleteDetailsByBillId(${main.entityName}.getBillId());
+
+		for (${detail.capitalEntityName} ${detail.capitalEntityName} : ${detail.capitalEntityName}List) {
+			${detail.mapperName}.insert(${detail.capitalEntityName});
+		}
+		// 新增明细
+		// ${detail.mapperName}.batchInsert(${detail.capitalEntityName}List);
+
+		Integer toDoStatus = 1;
+		// 新增就新增更新就更新
+		if (SpringObjectUtilsExt.isEmpty(${main.mapperName}.selectByPrimaryKey(${main.entityName}.getBillId()))) {
+			toDoStatus = 0;
+			// 新增主表信息
+			${main.mapperName}.insertSelective(${main.entityName});
+		} else {
+			// 更新主表信息
+			${main.mapperName}.updateByPrimaryKeySelective(${main.entityName});
+		}
+
+		// 记录单据申请代办信息(0 新增 1修改)
+		assetTodoTaskService.assetTodo(${main.entityName}, toDoStatus);
+	}
+
+	// 获取单据编码
+	private String getBillCode(${main.capitalEntityName} ${main.entityName}, boolean tempSaveFlag) {
+		String billCode = "";
+		if (tempSaveFlag) {
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBillCode())) {// 未设置单据编码的单据设置单据编码
+				billCode = apiCodegenService.newBillCodeByAdd(BUSINESS_TYPE, ${main.entityName}.getOrgId());
+			}
+		} else {
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBillCode())) {// 未设置单据编码的单据设置单据编码
+
+				billCode = apiCodegenService.newBillCodeByAdd(BUSINESS_TYPE, ${main.entityName}.getOrgId());
+
+				if (StringUtilsExt.isEmpty(billCode)) {
+					billCode = apiCodegenService.newBillCodeBySave(BUSINESS_TYPE,
+							${main.entityName}.getOrgId(), ${main.entityName}.getBillCode());
+				}
+			}
+		}
+		return billCode;
+	}
+
+    @Override
+	public ProcessResult doAuditOperation(${main.capitalEntityName} ${main.entityName}, ActivitiParams params) {
+
+		ProcessResult processResult = new ProcessResult();
+
+		try {
+
+			if (StringUtilsExt.isEmpty(${main.entityName}.getBillCode())) {
+				// 改用服务的形式 生成编码 控制在一个事务中
+				String billCode = getBillCode(${main.entityName}, false);
+				${main.entityName}.setBillCode(billCode);
+			}
+
+			processResult = activitiProcessService.handleTask(params);
+			// @Review 字符串的相等 请使用 equals @ToFix待咨询 不是很理解
+			if (ActivitiException.SUCCESS.getCode().equals(processResult.getCode())) {
+
+				${main.entityName}.setBizStatus(processResult.getBizStatus());// 业务状态
+				${main.entityName}.setBizStatusName(processResult.getBIzStatusName());// 上一步
+				${main.entityName}.setNextStep(processResult.getLog().getNextNodeName());// 下一环节
+
+				${main.entityName}.setAuditor(processResult.getLog().getOperatorName());
+				// ${main.entityName}.setApprover(processResult.getLog().getNextExecutorName());//
+				// 审批人
+
+				// ${main.entityName}.setConfirmDate(DateUtilsExt.getCurrentDate());// 终审日期
+				${main.entityName}.setAuditDate(DateUtilsExt.getNowDateTime());// 设置审核日期
+
+				${main.mapperName}.updateByPrimaryKeySelective(${main.entityName});// 更新审核后的主表数据
+
+				// 记录单据申请代办信息
+				assetTodoTaskService.assetTodo(${main.entityName}, processResult, params);
+			} else {
+				throw new BusinessException("AIMS_USE_01", processResult.getMessage());
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			processResult.setCode(ActivitiException.ERROR.getCode());
+			processResult.setMessage(e.getMessage());
+			throw new BusinessException("AT404", e.getMessage());
+		}
+		return processResult;
+	}
+
+	@Override
+	public ${main.capitalEntityName} get${main.capitalEntityName}ByPrimaryKey(Long billId) {
+
+		return ${main.mapperName}.selectByPrimaryKey(billId);
+	}
+
+	@Override
+	public ProcessResult doDelete(${main.capitalEntityName} ${main.entityName}) {
+		ProcessResult processResult = new ProcessResult();
+		String voidMsg = "单据【" + ${main.entityName}.getBillCode() + "】";
+		try {
+
+			// 暂存是物理删除
+			if (${main.entityName}.getBizStatus().equals(TaskStatus.ZANCUN.getStatus())
+					|| ${main.entityName}.getBizStatus().equals(TaskStatus.NEW.getStatus())) {
+				// 删除主表
+				${main.mapperName}.deleteByBillId(${main.entityName}.getBillId());
+				// 删除明细表
+				${detail.mapperName}.deleteDetailsByBillId(${main.entityName}.getBillId());
+
+			} else {
+				// 逻辑删除 状态位标记为作废
+				ActivitiParams pa = new ActivitiParams();
+				pa.setBusinessId(${main.entityName}.getBillId());
+				activitiProcessService.forceDeleteProcessInstance(pa);
+				${main.entityName}.setBizStatus(TaskStatus.NEGATE.getStatus());
+				${main.entityName}.setBizStatusName(TaskStatus.NEGATE.getName());
+				${main.entityName}.setBillStatus("3");// 单据状态设置为3，代表报废
+
+				// ${main.entityName}.setConfirmDate(DateUtilsExt.getNowDateTime());
+				${main.mapperName}.updateByPrimaryKeySelective(${main.entityName});// 更新主表--报废的时候不删除数据
+			}
+
+			// 记录单据申请代办信息
+			assetTodoTaskService.assetTodo(${main.entityName}, 2);
+			processResult.setCode(ActivitiException.SUCCESS.getCode());
+		} catch (Exception e) {
+			e.printStackTrace();
+			processResult.setMessage(voidMsg + "删除操作失败");
+			processResult.setCode(ActivitiException.ERROR.getCode());
+			throw new BusinessException("AT404", e.getMessage());
+		}
+		return processResult;
+	}
+
+
+	@Override
+	public void viewRecrod(ActivitiParams params) {
+		activitiProcessService.viewRecrod(params);
+	}
+
+	@Override
+	public List<Map<String, Object>> isCanReject(Long id) {
+
+		return ${main.mapperName}.isCanReject(id);
+	}
+}
+ 
+ 
