@@ -118,7 +118,7 @@ define(["app/app-pagebase","resources/egov/js/utils/print.js"],
 		    getPageTitle:function(curEditStatus){
 		    	var _self =${main.capitalEntityName}Util.getInstance();
 		      
-		        var title ="${main.comments";
+		        var title ="${main.comments}";
 	        	if(_self.ACTION.ADD==curEditStatus){
 				    return "新建"+title;
 	        	}  
@@ -166,14 +166,18 @@ define(["app/app-pagebase","resources/egov/js/utils/print.js"],
 			setFormFieldStyle:function($input){
 			    	var len = $input.length;
 		   		    for (var i=0;i<len;i++){
-			   			 var options = $($input[i]).attr('_options');
+			   			 var options = $($input
+			   			 [i])
+			   			 .attr('_options');
 						 if(options){
 							 var obj = eval('(' + options + ')');
 							 obj['readonly']='true';
 							 var s = JSON.stringify(obj);
-							 $($input[i]).attr('_options',s).addClass('form-field-view');
+							 $($input
+							 [i]).attr('_options',s).addClass('form-field-view');
 						 }else{
-							 $($input[i]).attr('_options','{readonly:true}').addClass('form-field-view');
+							 $($input
+							 [i]).attr('_options','{readonly:true}').addClass('form-field-view');
 						 }
 		   		    }		 
 			},

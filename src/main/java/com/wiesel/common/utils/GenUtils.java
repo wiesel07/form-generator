@@ -146,34 +146,39 @@ public class GenUtils {
 
 		//  web resources
 		if (template.contains("Index.js.vm")) {
-			packagePath = generatorProperties.getJsPath() + File.separator +classname+File.separator+webIndexdName + ".java";
+			packagePath = generatorProperties.getJsPath() + File.separator +classname+File.separator+webIndexdName + ".js";
 			return packagePath;
 		}
 		
 		if (template.contains("Add.js.vm")) {
-			packagePath = generatorProperties.getJsPath() + File.separator +classname+File.separator+webAddName + ".java";
+			packagePath = generatorProperties.getJsPath() + File.separator +classname+File.separator+webAddName + ".js";
+			return packagePath;
+		}
+		
+		if (template.contains("Util.js.vm")) {
+			packagePath = generatorProperties.getJsPath() + File.separator +classname+File.separator+webUtilName + ".js";
 			return packagePath;
 		}
 		
 		// xml
 		if (template.contains("Index.xml.vm")) {
-			packagePath = generatorProperties.getXmlPath() + File.separator +classname+File.separator+webIndexdName + ".java";
+			packagePath = generatorProperties.getXmlPath() + File.separator +classname+File.separator+webIndexdName + ".xml";
 			return packagePath;
 		}
 		
 		if (template.contains("Add.xml.vm")) {
-			packagePath = generatorProperties.getXmlPath() + File.separator +classname+File.separator+webAddName + ".java";
+			packagePath = generatorProperties.getXmlPath() + File.separator +classname+File.separator+webAddName + ".xml";
 			return packagePath;
 		}
 		
 		// jsp
 		if (template.contains("Index.jsp.vm")) {
-			packagePath = generatorProperties.getJspPath() + File.separator +classname+File.separator+webIndexdName + ".java";
+			packagePath = generatorProperties.getJspPath() + File.separator +classname+File.separator+webIndexdName + ".jsp";
 			return packagePath;
 		}
 		
 		if (template.contains("Add.jsp.vm")) {
-			packagePath = generatorProperties.getJspPath() + File.separator +classname+File.separator+webAddName + ".java";
+			packagePath = generatorProperties.getJspPath() + File.separator +classname+File.separator+webAddName + ".jsp";
 			return packagePath;
 		}
 		return null;
@@ -201,9 +206,9 @@ public class GenUtils {
 		// web 
 		templates.add("vm/java/web/Controller.java.vm");
 
-	//	templates.add("vm/java/web/js/Add.js.vm");
+		templates.add("vm/java/web/js/Add.js.vm");
 		templates.add("vm/java/web/js/Index.js.vm");
-	//	templates.add("vm/java/web/js/Util.js.vm");
+		templates.add("vm/java/web/js/Util.js.vm");
 		
 		templates.add("vm/java/web/jsp/Add.jsp.vm");
 		templates.add("vm/java/web/jsp/Index.jsp.vm");
@@ -248,6 +253,7 @@ public class GenUtils {
 		map.put("controllerReqPath", generatorProperties.getControllerReqPath());
 		map.put("businessType", generatorProperties.getBusinessType());
 		map.put("xmlJsPath", generatorProperties.getXmlJsPath());
+		map.put("templatePath", generatorProperties.getTemplatePath());
 		String moduleName = generatorProperties.getModuleName();
 		map.put("moduleName", moduleName);
 		if (StrUtil.isNotBlank(moduleName)) {
@@ -259,7 +265,7 @@ public class GenUtils {
 		// 实体
 		String capitalEntityName = String.format(generatorProperties.getEntityName(), capitalClassName);
 		map.put("capitalEntityName", capitalEntityName);
-		map.put("entityName", capitalEntityName);
+		map.put("entityName",StringUtils.uncapitalize(capitalEntityName));
 
 		// mapper
 		String capitalMapperName = String.format(generatorProperties.getMapperName(), capitalClassName);

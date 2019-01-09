@@ -7,7 +7,7 @@ define(
 		[ 
 		  "app/widgets/window/app-dialog",
 		  "app/app-pagebase",
-		  "$!{main.xmlJsPath}/${main.classname}_util.js",
+		  "$!{main.xmlJsPath}/${main.classname}/${main.classname}_util.js",
 		  "resources/egov/js/common/utils/StatusUtils",
 		  "resources/egov/js/asset/comment/assetcomment/assetcomment_add.js",
 		   "resources/egov/js/common/utils/billUtils",
@@ -155,7 +155,8 @@ define(
 					      * 审核按钮事件
 					      */
 				       ${main.entityName}Page_checkBtn:function () {
-				   	       $A.assetMsg.confirm("确认审核吗？", {
+				   	       $A.assetMsg
+				   	       .confirm('确认审核吗'？, {
 								  ok:function(){
 									   ${main.capitalEntityName}Dlg.getInstance().doAuditSave({
 						            	     isCheckPass: true
@@ -169,8 +170,10 @@ define(
 				       ${main.entityName}Page_backBtn:function (params) {
 				           var backInfo=null;
 					       	if("backRadom"==params){
-					       		var backNodeInfo =$billUtils.getBackNodeInfo({'billId':$A("#billId").textbox('getValue')});
-						        	$billUtils.showPage({'backNodeInfo':backNodeInfo},function(backInfo){
+					       		var backNodeInfo =$billUtils
+					       		.getBackNodeInfo({'billId':$A('#billId').textbox('getValue')});
+						        	$billUtils
+						        	.showPage({'backNodeInfo':backNodeInfo},function(backInfo){
 						        		${main.capitalEntityName}Dlg.getInstance().doAuditSave({
 						              	     isBack: true,
 						              	     taskId:backInfo.taskId,
@@ -191,7 +194,8 @@ define(
 				        */
 				       ${main.entityName}Page_rejectBtn:function(){
 				      
-					       	$A.assetMsg.confirm("确认驳回该单据吗？", {
+					       	$A.assetMsg
+					       	.confirm('确认驳回该单据吗？', {
 									  ok:function(){
 										  ${main.capitalEntityName}Dlg.getInstance().doAuditSave({
 							            	     isReject: true
@@ -210,7 +214,8 @@ define(
 				            if(_self.ACTION.AUDIT ==curEditStatus || _self.ACTION.REJECT_AUDIT == curEditStatus ){
 				           	   action= $assetComment.ACTION.ADD;
 				            }
-					       	 $assetComment.showCommentPage({bizId:billId,action:action},function(content){
+					       	 $assetComment
+					       	 .showCommentPage({bizId:billId,action:action},function(content){
 					       		 $("#auditOpin").textbox("setValue",content);
 					       		 $("#auditOpin").textbox("setText",content);
 					       	 })
@@ -248,12 +253,12 @@ define(
 						   if(!flag)return ;
 						   var gridData = $A("#${detail.entityName}Page_grid").grid("getAllData")
 						  
-						   
 						   $A.showWaitScreen();//显示等待画面
-						   $app.ajax.ajaxCall({
+						   $app.ajax
+						   .ajaxCall({
 				                url: url,
 				                data: {
-				                	'formData': JSON.stringify(formData),
+				                	'formData':JSON.stringify(formData) ,
 				                	'gridData':JSON.stringify(gridData)
 				                },
 				                callback: function (result) {
@@ -318,7 +323,8 @@ define(
 			        	
 			            var billId = $A("#billId").textbox("getValue");
 						$A.showWaitScreen();//显示等待画面
-			            $app.ajax.ajaxCall({
+			            $app.ajax
+			            .ajaxCall({
 			                url: url,
 			                data: {
 			                	billId:billId,

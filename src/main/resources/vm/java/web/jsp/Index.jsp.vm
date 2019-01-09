@@ -7,5 +7,5 @@
 <%@taglib uri="http://www.bosssoft.com.cn/tags" prefix="af"%>
 <title>${main.comments}</title>
 
-<af:jsfile path="$!{main.xmlJsPath}/${main.classname}_index.js"  id="${main.classname}_index"  onPageLoad="${main.classname}_index.init" />
+<af:jsfile path="$!{main.xmlJsPath}/${main.classname}/${main.classname}_index.js"  id="${main.classname}_index"  onPageLoad="${main.classname}_index.init" />
 <af:page id="${main.entityName}Page" />

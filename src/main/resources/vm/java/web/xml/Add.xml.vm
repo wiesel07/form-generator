@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Page id="${main.entityName}Page" layout="border"
-	templatePath="$!{main.templatePath}/${main.classname}_add.jsp"
-	js="$!{main.xmlJsPath}/${main.classname}_add.js"
+	templatePath="$!{main.templatePath}/${main.classname}/${main.classname}_add.jsp"
+	js="$!{main.xmlJsPath}/${main.classname}/${main.classname}_add.js"
 	jsId="${main.classname}_add" xmlns="http://www.bosssoft.org"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.bosssoft.org ../../../../../schema/uis/uitemplate-2.0.xsd">

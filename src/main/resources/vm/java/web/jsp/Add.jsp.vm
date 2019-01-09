@@ -6,7 +6,7 @@
 <%@taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 <%@taglib uri="http://www.bosssoft.com.cn/tags" prefix="af"%>
 <title>项目计划登记</title>
-<af:jsfile path="$!{main.xmlJsPath}/${main.classname}_add.js"  id="${main.classname}_add"  onPageLoad="${main.classname}_add.init" />
+<af:jsfile path="$!{main.xmlJsPath}/${main.classname}/${main.classname}_add.js"  id="${main.classname}_add"  onPageLoad="${main.classname}_add.init" />
 <link rel="stylesheet" href="resources/egov/common/css/commonBill.css"/>
 
 <div class="content-main"> 

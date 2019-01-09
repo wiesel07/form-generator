@@ -184,7 +184,12 @@ public class GeneratorController {
 		if (StrUtil.isEmpty(xmlJsPath)) {
 			throw new ApiException("xml中的js路径不能为空");
 		}
-
+		
+		String templatePath= generatorProperties.getTemplatePath();
+		if (StrUtil.isEmpty(templatePath)) {
+			throw new ApiException("xml中的jsp模板路径不能为空");
+		}
+		
 		String businessType = generatorProperties.getBusinessType();
 		if (StrUtil.isEmpty(businessType)) {
 			throw new ApiException("业务类型不能为空");

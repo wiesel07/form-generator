@@ -89,6 +89,9 @@ public class GeneratorProperties {
 	private String xmlJsPath;
 
 	private String businessType;
+	
+	// jsp模板路径地址
+	private String templatePath;
 
 	public static final String AUTHOR = "author";
 	public static final String PARENT = "parent";
@@ -116,6 +119,7 @@ public class GeneratorProperties {
 
 	public static final String BUSINESS_TYPE = "businessType";
 
+	public static final String TEMPLATE_PATH ="templatePath";
 	/**
 	 * 
 	 * <p>

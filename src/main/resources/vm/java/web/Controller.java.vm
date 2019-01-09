@@ -74,7 +74,7 @@ import com.bosssoft.platform.ui.tags.UIConst;
  *          </p>
  */ 
 @Controller
-@RequestMapping("$!{main.controllerReqPath}")
+@RequestMapping(value="$!{main.controllerReqPath}", name = "${main.comments}")
 public class ${main.capitalControllerName} {
   
     private final static String BUSINESS_TYPE="${main.businessType}"; 

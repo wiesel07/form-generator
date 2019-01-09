@@ -5,7 +5,7 @@
 define(
 		[ 
 		  "app/widgets/window/app-dialog",
-		  "app/app-pagebase","$!{main.xmlJsPath}/${main.classname}_add.js",
+		  "app/app-pagebase","$!{main.xmlJsPath}/${main.classname}/${main.classname}_add.js",
 		  "resources/egov/js/common/utils/StatusUtils",
 		  "resources/egov/js/asset/todo/activitinextuser/audit_check.js"],
 		function(Dialog,PageBase,dlg,$status,$checkdlg) {
@@ -231,7 +231,8 @@ define(
 					
 				      //格式化网格业务状态
 			        formatterBizStatus:function(val,rowVal){
-						return $status.formatterBizStatus(rowVal.bizStatus);
+						return $status
+						.formatterBizStatus(rowVal.bizStatus);
 					},
 					//显示查看业
 					showViewPage:function(data){
@@ -261,11 +262,13 @@ define(
 			            } else {
 			                for (var i = 0; i < rows.length; i++) {
 			                	if(rows[i].bizStatus > 10){
-				               		 $A.assetMsg.warn("单据【"+rows[i].billCode+"】不可进行删除！");
+				               		 $A.assetMsg
+				               		 .warn("单据【"+rows[i].billCode+"】不可进行删除！");
 				               	    return;
 			                 	}
 			                }
-				   	      $A.assetMsg.confirm("确认删除所选单据吗？", {
+				   	      $A.assetMsg
+				   	      .confirm('确认删除所选单据吗？' {
 			                    ok: function () {
 			                    	$A.showWaitScreen();//显示等待画面
 			                        var url = "$!{main.controllerReqPath}/doBatchDelete.do";
@@ -273,7 +276,8 @@ define(
 			        				for (var i = 0; i < rows.length; i++) {
 			        					ids[i] = rows[i].billId;
 			        				}
-			                        $app.ajax.ajaxCall({
+			                        $app.ajax
+			                        .ajaxCall({
 			                            url: url,
 			                            data: {
 			                            	ids:ids,
@@ -309,7 +313,8 @@ define(
 			            	$A.assetMsg.warn("请选择要提交的单据！");
 			                return;
 			             }else {        
-			                 $A.assetMsg.confirm("确定提交吗？",{
+			                 $A.assetMsg
+			                 .confirm("确定提交吗？",{
 									ok:function(){
 										$A.showWaitScreen();//显示等待画面
 										var url =  "$!{main.controllerReqPath}/doCommit.do";
@@ -317,21 +322,25 @@ define(
 										for (var i = 0; i < rows.length; i++) {
 											ids[i] = rows[i].billId;
 										}
-										$app.ajax.ajaxCall({
+										$app.ajax
+										.ajaxCall({
 											url : url,
 											data : {
 												ids:ids
 											},
 											success : function(data) {													
-												${main.capitalEntityName}Model.getInstance().refreshData();
-												$checkdlg.showBatchPage($checkdlg.ACTION.VIEW,data,function(){
+												${main.capitalEntityName}Model
+												.getInstance().refreshData();
+												$checkdlg
+												.showBatchPage($checkdlg.ACTION.VIEW,data,function(){
 													
 												});
 						                     	 //$A.assetMsg.success(json);	
 											},
 											error:function(json){
 			           	     	        	   var index = json.causeBy.indexOf('d');
-			           	     	        	    $A.assetMsg.warn(json.causeBy.substring(index+2));
+			           	     	        	    $A.assetMsg
+			           	     	        	    .warn(json.causeBy.substring(index+2));
 			           	     	           },
 											 complete:function(){
 								                	$A.hideWaitScreen();//隐藏等待画面	
